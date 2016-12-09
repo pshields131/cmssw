@@ -62,11 +62,12 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   float L1Tk_maxChi2 = 100.;  
   float L1Tk_maxChi2dof = 9999.;  
   
-  bool doDetailedPlots = false; //turn on to make full set of plots
+  bool doDetailedPlots = true; //turn on to make full set of plots
   bool makeCanvas = false;      //make PDF file with all the plots
   bool useTight = false;        //use tight quality cut selection (as used for Technical Proposal MET studies)
   bool doGausFit = false;       //do gaussian fit for resolution vs eta/pt plots
   bool doLooseMatch = false;
+  bool doExtraLooseMatch = false;
 
 
   //some counters for integrated efficiencies
@@ -172,6 +173,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   tree->SetBranchAddress("tp_d0",     &tp_d0,     &b_tp_d0);
   tree->SetBranchAddress("tp_pdgid",  &tp_pdgid,  &b_tp_pdgid);
   if (doLooseMatch) tree->SetBranchAddress("tp_nloosematch", &tp_nmatch, &b_tp_nmatch);
+  else if (doExtraLooseMatch) tree->SetBranchAddress("tp_nextraloosematch", &tp_nmatch, &b_tp_nmatch);
   else tree->SetBranchAddress("tp_nmatch", &tp_nmatch, &b_tp_nmatch);
   tree->SetBranchAddress("tp_nstub",  &tp_nstub,  &b_tp_nstub);
   tree->SetBranchAddress("tp_nstublayer", &tp_nstublayer, &b_tp_nstublayer);
@@ -186,6 +188,16 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
     tree->SetBranchAddress("loosematchtrk_chi2",  &matchtrk_chi2,  &b_matchtrk_chi2);
     tree->SetBranchAddress("loosematchtrk_consistency", &matchtrk_consistency, &b_matchtrk_consistency);
     tree->SetBranchAddress("loosematchtrk_nstub", &matchtrk_nstub, &b_matchtrk_nstub);
+  }
+  else if (doExtraLooseMatch) {
+    tree->SetBranchAddress("extraloosematchtrk_pt",    &matchtrk_pt,    &b_matchtrk_pt);
+    tree->SetBranchAddress("extraloosematchtrk_eta",   &matchtrk_eta,   &b_matchtrk_eta);
+    tree->SetBranchAddress("extraloosematchtrk_phi",   &matchtrk_phi,   &b_matchtrk_phi);
+    tree->SetBranchAddress("extraloosematchtrk_d0",    &matchtrk_d0,    &b_matchtrk_d0);
+    tree->SetBranchAddress("extraloosematchtrk_z0",    &matchtrk_z0,    &b_matchtrk_z0);
+    tree->SetBranchAddress("extraloosematchtrk_chi2",  &matchtrk_chi2,  &b_matchtrk_chi2);
+    tree->SetBranchAddress("extraloosematchtrk_consistency", &matchtrk_consistency, &b_matchtrk_consistency);
+    tree->SetBranchAddress("extraloosematchtrk_nstub", &matchtrk_nstub, &b_matchtrk_nstub);
   }
   else {
     tree->SetBranchAddress("matchtrk_pt",    &matchtrk_pt,    &b_matchtrk_pt);
@@ -264,6 +276,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
 
   // ----------------------------------------------------------------------------------------------------------------
   // resolution histograms
+  TH1F* h_m_pt     = new TH1F("m_pt",    ";p_{T} (L1) [GeV]; L1 tracks / 0.05",   200,-5.0,   40.0);
   TH1F* h_res_pt    = new TH1F("res_pt",    ";p_{T} residual (L1 - sim) [GeV]; L1 tracks / 0.05",   200,-5.0,   5.0);
   TH1F* h_res_ptRel = new TH1F("res_ptRel", ";p_{T} residual (L1 - sim) / p_{T}; L1 tracks / 0.01", 200,-1.0,   1.0);
   TH1F* h_res_eta   = new TH1F("res_eta",   ";#eta residual (L1 - sim); L1 tracks / 0.0002",        100,-0.01,  0.01);
@@ -475,7 +488,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   for (int i=0; i<nevt; i++) {
 
     tree->GetEntry(i,0);
-  
+    
 
     // ----------------------------------------------------------------------------------------------------------------
     // tracking particle loop
@@ -493,7 +506,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
       if (tp_pt->at(it) < 0.2) continue;
       if (tp_pt->at(it) > TP_maxPt) continue;
       if (fabs(tp_eta->at(it)) > TP_maxEta) continue;
-
+      
       h_tp_pt->Fill(tp_pt->at(it));
       if (tp_pt->at(it) < 5.0) h_tp_pt_L->Fill(tp_pt->at(it));
       
@@ -520,7 +533,6 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
       // ----------------------------------------------------------------------------------------------------------------
       // was the tracking particle matched to a L1 track?
       if (tp_nmatch->at(it) < 1) continue;
-
       
       // use only tracks with min X stubs
       if (matchtrk_nstub->at(it) < L1Tk_minNstub) continue;
@@ -644,6 +656,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
 
       // ----------------------------------------------------------------------------------------------------------------
       // fill resolution histograms
+      h_m_pt     ->Fill(matchtrk_pt->at(it));
       h_res_pt   ->Fill(matchtrk_pt->at(it)  - tp_pt->at(it));
       h_res_ptRel->Fill((matchtrk_pt->at(it) - tp_pt->at(it))/tp_pt->at(it));
       h_res_eta  ->Fill(matchtrk_eta->at(it) - tp_eta->at(it));
@@ -785,7 +798,6 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   
   } // end of event loop
   // ----------------------------------------------------------------------------------------------------------------
-  
 
   //some printouts
   float k = (float)n_match_eta1p0;
@@ -1381,6 +1393,8 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   // -------------------------------------------------------------------------------------------
 
   if (useTight) type = type+"_tight";
+  if (doLooseMatch) type = type+"_loose";
+  if (doExtraLooseMatch) type = type+"_extraloose";
  
   if (TP_select_pdgid != 0) {
     char pdgidtxt[500];
@@ -2090,7 +2104,17 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   if (doDetailedPlots) {
 
     // draw and save plots
+    h_m_pt->Draw();
+    h_m_pt->Write();
+    rms = h_m_pt->GetRMS();
+    sprintf(ctxt,"RMS = %.4f",rms);
+    mySmallText(0.22,0.82,1,ctxt);
+    c.SaveAs(DIR+type+"_m_pt.eps");
+    c.SaveAs(DIR+type+"_m_pt.png");
+    if (makeCanvas) c.SaveAs(type+"_canvas.pdf");
+
     h_res_pt->Draw();
+    h_res_pt->Write();
     rms = h_res_pt->GetRMS();
     sprintf(ctxt,"RMS = %.4f",rms);
     mySmallText(0.22,0.82,1,ctxt);
@@ -2099,6 +2123,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
     if (makeCanvas) c.SaveAs(type+"_canvas.pdf");
     
     h_res_ptRel->Draw();
+    h_res_ptRel->Write();
     rms = h_res_ptRel->GetRMS();
     sprintf(ctxt,"RMS = %.4f",rms);	
     mySmallText(0.22,0.82,1,ctxt);
@@ -2107,6 +2132,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
     if (makeCanvas) c.SaveAs(type+"_canvas.pdf");
 
     h_res_eta->Draw();
+    h_res_eta->Write();
     rms = h_res_eta->GetRMS();
     sprintf(ctxt,"RMS = %.3e",rms);	
     mySmallText(0.22,0.82,1,ctxt);
@@ -2115,6 +2141,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
     if (makeCanvas) c.SaveAs(type+"_canvas.pdf");
     
     h_res_phi->Draw();
+    h_res_phi->Write();
     rms = h_res_phi->GetRMS();
     sprintf(ctxt,"RMS = %.3e",rms);	
     mySmallText(0.22,0.82,1,ctxt);
@@ -2123,6 +2150,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
     if (makeCanvas) c.SaveAs(type+"_canvas.pdf");
     
     h_res_z0->Draw();
+    h_res_z0->Write();
     rms = h_res_z0->GetRMS();
     sprintf(ctxt,"RMS = %.4f",rms);	
     mySmallText(0.22,0.82,1,ctxt);
