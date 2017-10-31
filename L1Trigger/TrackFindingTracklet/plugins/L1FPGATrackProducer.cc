@@ -616,8 +616,8 @@ void L1FPGATrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSe
       if (doMyDebug) std::cout << "... add this stub to the event!" << std::endl;
 
       if (ev.addStub(layer,ladder,module,strip,-1,tempStubPtr->getTriggerBend(),
-		     posStub.x(),posStub.y(),posStub.z(),
-		     innerStack,irphi,iz,iladder,imodule,isPSmodule,isFlipped)) {
+                     posStub.x(),posStub.y(),posStub.z(),
+                     innerStack,irphi,iz,iladder,imodule,isPSmodule,isFlipped,stackDetid.rawId())) {
 
 	L1TStub lastStub=ev.lastStub();
 	stubMap[lastStub]=tempStubPtr;

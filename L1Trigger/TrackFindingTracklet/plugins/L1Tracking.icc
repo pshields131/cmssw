@@ -65,7 +65,7 @@
 
       unsigned int isFlipped = stub.isFlipped();
 
-      L1TStub aStub(simtrackid,stub.diphi(),stub.diz(),layer,ladder,module,stub.strip(),stub.x(),stub.y(),stub.z(),sigmax,sigmaz,stub.pt(),stub.bend(),isPSmodule,isFlipped);
+      L1TStub aStub(simtrackid,stub.diphi(),stub.diz(),layer,ladder,module,stub.strip(),stub.x(),stub.y(),stub.z(),sigmax,sigmaz,stub.pt(),stub.bend(),isPSmodule,isFlipped, stub.stackDetId());
 
       int count_match=0;
       for (int ilayer=0;ilayer<NBarrel;ilayer++){

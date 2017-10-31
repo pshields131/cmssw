@@ -14,7 +14,8 @@ public:
   }
 
   L1TStub(int simtrackid, int iphi, int iz, int layer, int ladder, int module, int strip,
-	  double x, double y, double z, double sigmax, double sigmaz, double pt, double bend, int isPSmodule, int isFlipped){
+          double x, double y, double z, double sigmax, double sigmaz, double pt, double bend, int isPSmodule, int isFlipped,
+          unsigned int stackDetId){
     simtrackid_=simtrackid;
     iphi_=iphi;
     iz_=iz;
@@ -31,6 +32,7 @@ public:
     bend_ = bend;
     isPSmodule_ = isPSmodule;
     isFlipped_ = isFlipped;
+    stackDetId_ = stackDetId;
 
     allstubindex_=999;
 
@@ -63,35 +65,37 @@ public:
   void write(ofstream& out){
     
     out << "Stub: " 
-	<< layer_+1 << "\t" 
-	<< ladder_ << "\t" 
-	<< module_ << "\t"
-	<< strip_<< "\t"
-	<< -1 << "\t"
-	<< pt_ << "\t" 
-	<< x_ << "\t" 
-	<< y_ << "\t" 
-	<< z_ << "\t" 
-	<< bend_ << "\t" 
-	<< isPSmodule_ << "\t" 
-	<< isFlipped_ << "\t" << endl; 
+        << layer_+1 << "\t" 
+        << ladder_ << "\t" 
+        << module_ << "\t"
+        << strip_<< "\t"
+        << -1 << "\t"
+        << pt_ << "\t" 
+        << x_ << "\t" 
+        << y_ << "\t" 
+        << z_ << "\t" 
+        << bend_ << "\t" 
+        << isPSmodule_ << "\t" 
+        << isFlipped_ << "\t" 
+        << stackDetId_ << "\t" << endl;  
 
   }
   void write(ostream& out){
     
     out << "Stub: " 
-	<< layer_+1 << "\t" 
-	<< ladder_ << "\t" 
-	<< module_ << "\t"
-	<< strip_<< "\t"
-	<< -1 << "\t"
-	<< pt_ << "\t" 
-	<< x_ << "\t" 
-	<< y_ << "\t" 
-	<< z_ << "\t" 
-	<< bend_ << "\t" 
-	<< isPSmodule_ << "\t" 
-	<< isFlipped_ << "\t" << endl; 	
+        << layer_+1 << "\t" 
+        << ladder_ << "\t" 
+        << module_ << "\t"
+        << strip_<< "\t"
+        << -1 << "\t"
+        << pt_ << "\t" 
+        << x_ << "\t" 
+        << y_ << "\t" 
+        << z_ << "\t" 
+        << bend_ << "\t" 
+        << isPSmodule_ << "\t" 
+        << isFlipped_ << "\t" 
+        << stackDetId_ << endl; 	
   }
 
   int ptsign() {
@@ -144,6 +148,7 @@ public:
   }
   unsigned int ladder() const { return ladder_; }
   unsigned int module() const { return module_; }
+  unsigned int stackDetId() const {return stackDetId_;}
   vector<pair<int,int> > innerdigis() const { return innerdigis_; }
   vector<pair<int,int> > outerdigis() const { return outerdigis_; }
   vector<pair<int,int> > innerdigisladdermodule() const { return innerdigisladdermodule_; }
@@ -249,6 +254,8 @@ private:
 
   unsigned int isPSmodule_;
   unsigned int isFlipped_;
+
+  unsigned int stackDetId_;
 
 };
 
