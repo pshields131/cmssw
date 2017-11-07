@@ -16,6 +16,7 @@ TTTracksFromTrackletEmulation = cms.EDProducer("L1FPGATrackProducer",
                                                TTStubSource = cms.InputTag("TTStubsFromPhase2TrackerDigis","StubAccepted"),
                                                BeamSpotSource = cms.InputTag("offlineBeamSpot"),
                                                trackerGeometryType  = cms.untracked.string(""),  #tilted barrel is assumed, use "flat" if running on flat
+                                               tiltedGeometryFile = cms.FileInPath('L1Trigger/TrackFindingTracklet/test/allCoordinates.csv'),
                                                # specific emulation inputs
                                                fitPatternFile  = cms.FileInPath('L1Trigger/TrackFindingTracklet/test/fitpattern.txt'),
                                                memoryModulesFile  = cms.FileInPath('L1Trigger/TrackFindingTracklet/test/memorymodules_new.dat'),

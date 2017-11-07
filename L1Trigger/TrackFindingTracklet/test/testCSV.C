@@ -1,4 +1,5 @@
 #include "../interface/TiltedGeometryInfo.hh"
+#include "../src/TiltedGeometryInfo.cc"
 
 #include <string>
 #include <iostream>
