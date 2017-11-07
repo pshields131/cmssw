@@ -11,14 +11,19 @@ class TiltedGeometryInfo {
 
 public:
 
-  static TiltedGeometryInfo *getInstance(std::string filename) {
-    if (!instance_) {
-      instance_ = new TiltedGeometryInfo(filename);
-    } else if (instance_->filename_ != filename) {
-      //Assume we're trying to switch to a different file name
-      delete instance_;
-      instance_ = new TiltedGeometryInfo(filename);
+  static TiltedGeometryInfo *getInstance(std::string filename = "") {
+    if (filename != "") {
+      if (!instance_) {
+        instance_ = new TiltedGeometryInfo(filename);
+      } else if (instance_->filename_ != filename) {
+        //Assume we're trying to switch to a different file name
+        delete instance_;
+        instance_ = new TiltedGeometryInfo(filename);
+      }
     }
+
+    //Warning: Will return a null pointer if you don't call it at
+    //least once with a file name
     return instance_;
   }
 
@@ -119,8 +124,5 @@ private:
   }
 
 };
-
-//Start it off initialized to zero
-TiltedGeometryInfo *TiltedGeometryInfo::instance_ = 0;
 
 #endif

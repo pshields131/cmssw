@@ -38,6 +38,7 @@
 #include "L1Trigger/TrackFindingTracklet/interface/L1TBarrel.hh"
 #include "L1Trigger/TrackFindingTracklet/interface/L1TDisk.hh"
 #include "L1Trigger/TrackFindingTracklet/interface/L1TStub.hh"
+#include "L1Trigger/TrackFindingTracklet/interface/TiltedGeometryInfo.hh"
 
 #include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
 #include "SimDataFormats/TrackingHit/interface/PSimHit.h"
@@ -155,6 +156,7 @@ private:
   edm::ParameterSet config;
 
   /// File path for configuration files
+  edm::FileInPath tiltedGeometryFile;
   edm::FileInPath fitPatternFile; 
   edm::FileInPath memoryModulesFile; 
   edm::FileInPath processingModulesFile; 
@@ -214,6 +216,8 @@ L1FPGATrackProducer::L1FPGATrackProducer(edm::ParameterSet const& iConfig) :
 
   geometryType_ = iConfig.getUntrackedParameter<string>("trackerGeometryType","");
 
+  tiltedGeometryFile = iConfig.getParameter<edm::FileInPath> ("tiltedGeometryFile");
+
   fitPatternFile = iConfig.getParameter<edm::FileInPath> ("fitPatternFile");
   processingModulesFile = iConfig.getParameter<edm::FileInPath> ("processingModulesFile");
   memoryModulesFile = iConfig.getParameter<edm::FileInPath> ("memoryModulesFile");
@@ -231,13 +235,16 @@ L1FPGATrackProducer::L1FPGATrackProducer(edm::ParameterSet const& iConfig) :
     sectors[i]=new FPGASector(i);
   }  
 
-  cout << "fit pattern :     "<<fitPatternFile.fullPath()<<endl;
-  cout << "process modules : "<<processingModulesFile.fullPath()<<endl;
-  cout << "memory modules :  "<<memoryModulesFile.fullPath()<<endl;
-  cout << "wires          :  "<<wiresFile.fullPath()<<endl;
+  cout << "fit pattern :          "<<fitPatternFile.fullPath()<<endl;
+  cout << "process modules :      "<<processingModulesFile.fullPath()<<endl;
+  cout << "memory modules :       "<<memoryModulesFile.fullPath()<<endl;
+  cout << "wires          :       "<<wiresFile.fullPath()<<endl;
 
   fitpatternfile=fitPatternFile.fullPath();
 
+  //Read in the tilted geometry csv
+  cout << "Initializing Tilted Geometry info from file:" << tiltedGeometryFile.fullPath()<<endl;
+  TiltedGeometryInfo *tgi = TiltedGeometryInfo::getInstance(tiltedGeometryFile.fullPath());
 
   cout << "Will read memory modules file"<<endl;
 

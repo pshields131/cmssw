@@ -37,6 +37,8 @@
 #include "L1Trigger/TrackFindingTracklet/interface/L1TBarrel.hh"
 #include "L1Trigger/TrackFindingTracklet/interface/L1TDisk.hh"
 #include "L1Trigger/TrackFindingTracklet/interface/L1TStub.hh"
+#include "L1Trigger/TrackFindingTracklet/interface/TiltedGeometryInfo.hh"
+
 
 #include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
 #include "SimDataFormats/TrackingHit/interface/PSimHit.h"
@@ -146,6 +148,9 @@ private:
   /// Containers of parameters passed by python configuration file
   edm::ParameterSet config;
 
+  /// File path for configuration files
+  edm::FileInPath tiltedGeometryFile;
+
   double phiWindowSF_;
 
   string asciiEventOutName_;
@@ -199,10 +204,17 @@ L1TrackProducer::L1TrackProducer(edm::ParameterSet const& iConfig) :
 
   geometryType_ = iConfig.getUntrackedParameter<string>("trackerGeometryType","");
 
+  tiltedGeometryFile = iConfig.getParameter<edm::FileInPath> ("tiltedGeometryFile");
+
   eventnum=0;
   if (asciiEventOutName_!="") {
     asciiEventOut_.open(asciiEventOutName_.c_str());
   }
+
+  //Read in the tilted geometry csv
+  cout << "Initializing Tilted Geometry info from file:" << tiltedGeometryFile.fullPath()<<endl;
+  TiltedGeometryInfo *tgi = TiltedGeometryInfo::getInstance(tiltedGeometryFile.fullPath());
+
 
 }
 
