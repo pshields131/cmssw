@@ -6,6 +6,7 @@
 #include "FPGATETable.hh"
 #include "FPGATETableDisk.hh"
 #include "FPGATETableOverlap.hh"
+#include "TiltedGeometryInfo.hh"
 
 using namespace std;
 
@@ -130,7 +131,6 @@ public:
     //if (getName().substr(0,5)!="TE_L1") return;
 
    
-
     unsigned int countall=0;
     unsigned int countpass=0;
 
@@ -154,6 +154,8 @@ public:
 	cout << "In "<<getName()<<" have inner stub"<<endl;
       }
 
+      static ofstream outd("trackletenginediff.txt");
+
       if ((layer1_==1 && layer2_==2)||
 	  (layer1_==3 && layer2_==4)||
 	  (layer1_==5 && layer2_==6)) {
@@ -169,6 +171,57 @@ public:
 	  for(unsigned int j=0;j<outervmstubs_->nStubsBinned(ibin);j++){
 	    std::pair<FPGAStub*,L1TStub*> outerstub=outervmstubs_->getStubBinned(ibin,j);
 	    countall++;
+	    if (0) {
+	      TiltedGeometryInfo *tgi = TiltedGeometryInfo::getInstance();
+	      unsigned int detId1 = innerstub.second->stackDetId();
+	      double r1 = tgi->r(detId1)/1000;
+	      double tiltAngle1 = tgi->tiltAngle(detId1);
+	      double sensorSpacing1 = tgi->sensorSpacing(detId1);
+	      double z1 = tgi->z(detId1)/1000;
+	      double theta1 = atan(r1/z1);
+	      double invpitch1 = 126.246686;
+	      if (innerstub.second->isPSmodule()) {
+		invpitch1 = 102.030405;
+	      }
+	      unsigned int detId2 = outerstub.second->stackDetId();
+	      double r2 = tgi->r(detId2)/1000;
+	      double tiltAngle2 = tgi->tiltAngle(detId2);
+	      double sensorSpacing2 = tgi->sensorSpacing(detId2);
+	      double z2 = tgi->z(detId2)/1000;
+	      double theta2 = atan(r2/z2);
+	      double invpitch2 = 126.246686;
+	      if (outerstub.second->isPSmodule()) {
+		invpitch2 = 102.030405;
+	      }
+	      double pt1 = 0.57*(innerstub.second->bend()/fabs(innerstub.second->bend()))*r1*sqrt(1+invpitch1*(pow(sin(theta1)*sensorSpacing1,2)/pow(cos(theta1-tiltAngle1)*innerstub.second->bend(),2)));
+	      if (innerstub.second->bend()==0) {
+		pt1 = 0.57*r1*sqrt(1+invpitch1*(pow(sin(theta1)*sensorSpacing1,2)/pow(cos(theta1-tiltAngle1)*innerstub.second->bend(),2)));
+	      }
+	      double pt2 = 0.57*(outerstub.second->bend()/fabs(outerstub.second->bend()))*r2*sqrt(1+invpitch2*(pow(sin(theta2)*sensorSpacing2,2)/pow(cos(theta2-tiltAngle2)*outerstub.second->bend(),2)));
+	      if (outerstub.second->bend()==0) {
+		pt2 = 0.57*r2*sqrt(1+invpitch2*(pow(sin(theta2)*sensorSpacing2,2)/pow(cos(theta2-tiltAngle2)*outerstub.second->bend(),2)));
+	      }
+	      
+	      outd << "LL " << innerstub.second->allStubIndex() <<" "<< layer1_ <<" "<< innerstub.second->bend() <<" "<< pt1 <<" "<< outerstub.second->simtrackid() <<" "<< layer2_ <<" "<< outerstub.second->bend() <<" "<< pt2 <<" "<< 1.0/pt1 - 1.0/pt2 << endl;
+	      
+	      double pass = 1.0;
+	      if (layer1_==1 && layer2_==2) {
+		pass = 0.6;
+	      }
+	      if (layer1_==3 && layer2_==4) {
+		pass = 0.4;
+	      }
+	      if (layer1_==5 && layer2_==6) {
+		pass = 0.3;
+	      }
+	      
+	      if (fabs(1.0/pt1-1.0/pt2)>pass) {
+		if (debug1) {
+		  cout << "FPGATrackletEngine Rejected1 pt1 pt2 : "<<pt1<<" "<<pt2<<endl;
+		}
+		continue;
+	      }
+	    }
 	    countpass++;
 	    //cout << "FPGATrackletEngine : "<<getName()<<" Adding stub pair"<<endl;
 	    stubpairs_->addStubPair(innerstub,outerstub);
@@ -188,6 +241,55 @@ public:
 	  for(unsigned int j=0;j<outervmstubs_->nStubsBinned(ibin);j++){
 	    std::pair<FPGAStub*,L1TStub*> outerstub=outervmstubs_->getStubBinned(ibin,j);
 	    countall++;
+	    if (0) {
+	      TiltedGeometryInfo *tgi = TiltedGeometryInfo::getInstance();
+	      unsigned int detId1 = innerstub.second->stackDetId();
+	      double r1 = tgi->r(detId1)/1000;
+	      double tiltAngle1 = tgi->tiltAngle(detId1);
+	      double sensorSpacing1 = tgi->sensorSpacing(detId1);
+	      double z1 = tgi->z(detId1)/1000;
+	      double theta1 = atan(r1/z1);
+	      double invpitch1 = 126.246686;
+	      if (innerstub.second->isPSmodule()) {
+		invpitch1 = 102.030405;
+	      }
+	      unsigned int detId2 = outerstub.second->stackDetId();
+	      double r2 = tgi->r(detId2)/1000;
+	      double tiltAngle2 = tgi->tiltAngle(detId2);
+	      double sensorSpacing2 = tgi->sensorSpacing(detId2);
+	      double z2 = tgi->z(detId2)/1000;
+	      double theta2 = atan(r2/z2);
+	      double invpitch2 = 126.246686;
+	      if (outerstub.second->isPSmodule()) {
+		invpitch2 = 102.030405;
+	      }
+
+	      double pt1 = 0.57*(innerstub.second->bend()/fabs(innerstub.second->bend()))*r1*sqrt(1+invpitch1*(pow(sin(theta1)*sensorSpacing1,2)/pow(cos(theta1-tiltAngle1)*innerstub.second->bend(),2)));
+	      if (innerstub.second->bend()==0) {
+		pt1 = 0.57*r1*sqrt(1+invpitch1*(pow(sin(theta1)*sensorSpacing1,2)/pow(cos(theta1-tiltAngle1)*innerstub.second->bend(),2)));
+	      }
+	      double pt2 = 0.57*(outerstub.second->bend()/fabs(outerstub.second->bend()))*r2*sqrt(1+invpitch2*(pow(sin(theta2)*sensorSpacing2,2)/pow(cos(theta2-tiltAngle2)*outerstub.second->bend(),2)));
+	      if (outerstub.second->bend()==0) {
+		pt2 = 0.57*r2*sqrt(1+invpitch2*(pow(sin(theta2)*sensorSpacing2,2)/pow(cos(theta2-tiltAngle2)*outerstub.second->bend(),2)));
+	      }
+	      
+	      outd << "DD " << innerstub.second->simtrackid() <<" "<< disk1_ <<" "<< innerstub.second->bend() <<" "<< pt1 <<" "<< outerstub.second->simtrackid() <<" "<< disk2_ <<" "<< outerstub.second->bend() <<" "<< pt2 <<" "<< 1.0/pt1-1.0/pt2 << endl;
+	      
+	      double pass = 1.0;
+	      if (disk1_==1 && disk2_==2) {
+		pass = 0.8;
+	      }
+	      if (disk1_==3 && disk2_==4) {
+		pass = 0.7;
+	      }
+	      
+	      if (fabs(1.0/pt1-1.0/pt2)>pass) {
+		if (debug1) {
+		  cout << "FPGATrackletEngine Rejected1 pt1 pt2 : "<<pt1<<" "<<pt2<<endl;
+		}
+		continue;
+	      }
+	    }
 	    countpass++;
 	    //cout << "FPGATrackletEngine : "<<getName()<<" Adding stub pair"<<endl;
 	    stubpairs_->addStubPair(innerstub,outerstub);
@@ -205,6 +307,49 @@ public:
 	  for(unsigned int j=0;j<outervmstubs_->nStubsBinned(ibin);j++){
 	    std::pair<FPGAStub*,L1TStub*> outerstub=outervmstubs_->getStubBinned(ibin,j);
 	    countall++;
+	    if (0) {
+	      TiltedGeometryInfo *tgi = TiltedGeometryInfo::getInstance();
+	      unsigned int detId1 = innerstub.second->stackDetId();
+	      double r1 = tgi->r(detId1)/1000;
+	      double tiltAngle1 = tgi->tiltAngle(detId1);
+	      double sensorSpacing1 = tgi->sensorSpacing(detId1);
+	      double z1 = tgi->z(detId1)/1000;
+	      double theta1 = atan(r1/z1);
+	      double invpitch1 = 126.246686;
+	      if (innerstub.second->isPSmodule()) {
+		invpitch1 = 102.030405;
+	      }
+	      unsigned int detId2 = outerstub.second->stackDetId();
+	      double r2 = tgi->r(detId2)/1000;
+	      double tiltAngle2 = tgi->tiltAngle(detId2);
+	      double sensorSpacing2 = tgi->sensorSpacing(detId2);
+	      double z2 = tgi->z(detId2)/1000;
+	      double theta2 = atan(r2/z2);
+	      double invpitch2 = 126.246686;
+	      if (outerstub.second->isPSmodule()) {
+		invpitch2 = 102.030405;
+	      }
+
+	      double pt1 = 0.57*(innerstub.second->bend()/fabs(innerstub.second->bend()))*r1*sqrt(1+invpitch1*(pow(sin(theta1)*sensorSpacing1,2)/pow(cos(theta1-tiltAngle1)*innerstub.second->bend(),2)));
+	      if (innerstub.second->bend()==0) {
+		pt1 = 0.57*r1*sqrt(1+invpitch1*(pow(sin(theta1)*sensorSpacing1,2)/pow(cos(theta1-tiltAngle1)*innerstub.second->bend(),2)));
+	      }
+	      double pt2 = 0.57*(outerstub.second->bend()/fabs(outerstub.second->bend()))*r2*sqrt(1+invpitch2*(pow(sin(theta2)*sensorSpacing2,2)/pow(cos(theta2-tiltAngle2)*outerstub.second->bend(),2)));
+	      if (outerstub.second->bend()==0) {
+		pt2 = 0.57*r2*sqrt(1+invpitch2*(pow(sin(theta2)*sensorSpacing2,2)/pow(cos(theta2-tiltAngle2)*outerstub.second->bend(),2)));
+	      }
+	      
+	      outd << "DL1 " << innerstub.second->simtrackid() <<" "<< disk1_ <<" "<< innerstub.second->bend() <<" "<< pt1 <<" "<< outerstub.second->simtrackid() <<" "<< layer2_ <<" "<< outerstub.second->bend() <<" "<< pt2 <<" "<< 1.0/pt1-1.0/pt2 << endl;
+	      
+	      double pass = 0.8;
+
+	      if (fabs(1.0/pt1-1.0/pt2)>pass) {
+		if (debug1) {
+		  cout << "FPGATrackletEngine Rejected1 pt1 pt2 : "<<pt1<<" "<<pt2<<endl;
+		}
+		continue;
+	      }
+            }
 	    countpass++;
 	    //cout << "FPGATrackletEngine : "<<getName()<<" Adding stub pair"<<endl;
 	    stubpairs_->addStubPair(innerstub,outerstub);
@@ -228,7 +373,7 @@ public:
 	  for(unsigned int j=0;j<outervmstubs_->nStubsBinned(ibin);j++){
 	    std::pair<FPGAStub*,L1TStub*> outerstub=outervmstubs_->getStubBinned(ibin,j);
 
-
+	    //countall++;
 	    double r1=innerstub.second->r();
 	    double z1=innerstub.second->z();
 	    
@@ -249,6 +394,49 @@ public:
 
 	    
 	    countall++;
+	    if (0) {
+	      TiltedGeometryInfo *tgi = TiltedGeometryInfo::getInstance();
+	      unsigned int detId1 = innerstub.second->stackDetId();
+	      double cr1 = tgi->r(detId1)/1000;
+	      double tiltAngle1 = tgi->tiltAngle(detId1);
+	      double sensorSpacing1 = tgi->sensorSpacing(detId1);
+	      double cz1 = tgi->z(detId1)/1000;
+	      double theta1 = atan(cr1/cz1);
+	      double invpitch1 = 126.246686;
+	      if (innerstub.second->isPSmodule()) {
+		invpitch1 = 102.030405;
+	      }
+	      unsigned int detId2 = outerstub.second->stackDetId();
+	      double cr2 = tgi->r(detId2)/1000;
+	      double tiltAngle2 = tgi->tiltAngle(detId2);
+	      double sensorSpacing2 = tgi->sensorSpacing(detId2);
+	      double cz2 = tgi->z(detId2)/1000;
+	      double theta2 = atan(cr2/cz2);
+	      double invpitch2 = 126.246686;
+	      if (outerstub.second->isPSmodule()) {
+		invpitch2 = 102.030405;
+	      }
+
+	      double pt1 = 0.57*(innerstub.second->bend()/fabs(innerstub.second->bend()))*cr1*sqrt(1+invpitch1*(pow(sin(theta1)*sensorSpacing1,2)/pow(cos(theta1-tiltAngle1)*innerstub.second->bend(),2)));
+	      if (innerstub.second->bend()==0) {
+		pt1 = 0.57*cr1*sqrt(1+invpitch1*(pow(sin(theta1)*sensorSpacing1,2)/pow(cos(theta1-tiltAngle1)*innerstub.second->bend(),2)));
+	      }
+	      double pt2 = 0.57*(outerstub.second->bend()/fabs(outerstub.second->bend()))*cr2*sqrt(1+invpitch2*(pow(sin(theta2)*sensorSpacing2,2)/pow(cos(theta2-tiltAngle2)*outerstub.second->bend(),2)));
+	      if (outerstub.second->bend()==0) {
+		pt2 = 0.57*cr2*sqrt(1+invpitch2*(pow(sin(theta2)*sensorSpacing2,2)/pow(cos(theta2-tiltAngle2)*outerstub.second->bend(),2)));
+	      }
+
+	      outd << "DL2 " << innerstub.second->simtrackid() <<" "<< disk1_ <<" "<< innerstub.second->bend() <<" "<< pt1 <<" "<< outerstub.second->simtrackid() <<" "<< layer2_ <<" "<< outerstub.second->bend() <<" "<< pt2 <<" "<< 1.0/pt1-1.0/pt2 << endl;
+
+	      double pass = 0.8;
+
+	      if (fabs(1.0/pt1-1.0/pt2)>pass) {
+		if (debug1) {
+		  cout << "FPGATrackletEngine Rejected1 pt1 pt2 : "<<pt1<<" "<<pt2<<endl;
+		}
+		continue;
+	      }
+            }
 	    countpass++;
 	    //cout << "FPGATrackletEngine : "<<getName()<<" Adding stub pair"<<endl;
 	    stubpairs_->addStubPair(innerstub,outerstub);
