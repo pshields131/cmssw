@@ -64,6 +64,8 @@ public:
 	  //cout << "r1 z1 phi1 : " << r1 << " " << z1 << " " << phi1 << endl; 
 
 	  for (unsigned int j=0;j<D->stubs_[jSector].size();j++) {
+
+	    cout << "Considered" << endl;
 	    double r2=D->stubs_[jSector][j].r();
 	    double z2=D->stubs_[jSector][j].z();
 	    double zcrude=z1-(z2-z1)*r1/(r2-r1);

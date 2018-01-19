@@ -39,10 +39,10 @@ static bool writeStubsLayer=false;
 static bool writeStubsLayerperSector=false;
 static bool writeLayerRouter=false;  //obsolete
 static bool writeDiskRouter=false;   //obsolete
-static bool writeAllStubs=false;
+static bool writeAllStubs=true;
 static bool writeVMOccupancyME=false;
-static bool writeVMOccupancyTE=false;
-static bool writeTE=false;
+static bool writeVMOccupancyTE=true;
+static bool writeTE=true;
 static bool writeTrackletCalculator=false;
 static bool writeTrackletPars=false;
 static bool writeNeighborProj=false;
@@ -234,14 +234,25 @@ static unsigned int MAXLAYERROUTER = 10000; //Max stubs handled by layer router
 static unsigned int MAXDISKROUTER = 10000; //Max stubs handled by disk router
 static unsigned int MAXVMROUTER = 10000; //Max stubs handled by VM router
 static unsigned int MAXTE = 10000; //Maximum number of stub pairs to try in TE 
-static unsigned int MAXTC = 64; //Maximum number of tracklet parameter calculations
+static unsigned int MAXTC = 64; //64 //Maximum number of tracklet parameter calculations
 //static unsigned int MAXPROJECTIONTRANSCEIVER = 10000; //Maximum number of projections to neighbor
 static unsigned int MAXPROJROUTER = 10000; //Maximum number of projections to route
 static unsigned int MAXME = 10000; //Maximum number of stub-projection matches to try
 static unsigned int MAXMC = 10000; //Maximum number of match calculations
 static unsigned int MAXFIT = 10000; //Maximum number of track fits
-
-
+/*
+static unsigned int MAXSTUBSLINK = 33; //Max stubs per link
+static unsigned int MAXLAYERROUTER = 33; //Max stubs handled by layer router
+static unsigned int MAXDISKROUTER = 33; //Max stubs handled by disk router
+static unsigned int MAXVMROUTER = 31; //Max stubs handled by VM router
+static unsigned int MAXTE = 34; //Maximum number of stub pairs to try in TE
+static unsigned int MAXTC = 35; //Maximum number of tracklet parameter calculations
+//static unsigned int MAXPROJECTIONTRANSCEIVER = 10000; //Maximum number of projections to neighbor
+static unsigned int MAXPROJROUTER = 36; //Maximum number of projections to route
+static unsigned int MAXME = 34; //Maximum number of stub-projection matches to try
+static unsigned int MAXMC = 30; //Maximum number of match calculations
+static unsigned int MAXFIT = 10000; //Maximum number of track fits
+*/
 static double dphisector=two_pi/NSector;
 
 //Constants for defining stub representations

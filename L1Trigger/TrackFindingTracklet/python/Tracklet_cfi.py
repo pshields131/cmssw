@@ -6,7 +6,8 @@ TTTracksFromTracklet = cms.EDProducer("L1TrackProducer",
                                       TTStubSource = cms.InputTag("TTStubsFromPhase2TrackerDigis","StubAccepted"),
                                       BeamSpotSource = cms.InputTag("offlineBeamSpot"),
                                       asciiFileName = cms.untracked.string(""),
-                                      trackerGeometryType  = cms.untracked.string("")  #tilted barrel is assumed, use "flat" if running on flat
+                                      trackerGeometryType  = cms.untracked.string(""),  #tilted barrel is assumed, use "flat" if running on flat
+                                      tiltedGeometryFile = cms.FileInPath('L1Trigger/TrackFindingTracklet/test/allCoordinates.csv')
     )
 
 TTTracksFromTrackletEmulation = cms.EDProducer("L1FPGATrackProducer",

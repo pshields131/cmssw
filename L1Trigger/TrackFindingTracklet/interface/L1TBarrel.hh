@@ -14,6 +14,7 @@ using namespace std;
 #include "L1TTracks.hh"
 #include "L1TGeomBase.hh"
 #include "L1TDisk.hh"
+#include "TiltedGeometryInfo.hh"
 
 
 class L1TBarrel:public L1TGeomBase {
@@ -68,6 +69,8 @@ public:
 
 	    double r2=L->stubs_[jSector][j].r();
 	    double z2=L->stubs_[jSector][j].z();
+
+	    cout << "Considered" << endl;
 
 	    double zcrude=z1-(z2-z1)*r1/(r2-r1);
 	    if (fabs(zcrude)>30) continue;
@@ -124,6 +127,8 @@ public:
 	    //if (!pass) continue; //currently not requiring stub pt consistency in forming tracklets
 	    */
 
+	    
+
 	    L1TTracklet tracklet(rinv,phi0,t,z0);
 	    tracklet.addStub(stubs_[iSector][i]);
 	    tracklet.addStub(L->stubs_[jSector][j]);
@@ -159,6 +164,8 @@ public:
 	  double phi1=stubs_[iSector][i].phi();
 
 	  for (unsigned int j=0;j<D->stubs_[jSector].size();j++) {
+
+	    cout << "Considered" << endl;
 
 	    double r2=D->stubs_[jSector][j].r();
 	    double z2=D->stubs_[jSector][j].z();
