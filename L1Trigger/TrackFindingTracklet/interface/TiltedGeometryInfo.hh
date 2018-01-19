@@ -51,10 +51,19 @@ public:
       return -9e20;
     }
   }
+  double z(const unsigned int &detId) const {
+    auto entry = zMap_.find(detId);
+    if (entry != zMap_.end()) {
+      return entry->second;
+    } else {
+      return -9e20;
+    }
+  }
+
   
 private:
 
-  std::map<unsigned int, double> rMap_, tiltAngleMap_, sensorSpacingMap_;
+  std::map<unsigned int, double> rMap_, tiltAngleMap_, sensorSpacingMap_, zMap_;
   std::string filename_;
 
   //Below we make the constructor private and have a static pointer so
@@ -82,6 +91,7 @@ private:
         double r = -9e20;
         double tiltAngle = -9e20;
         double sensorSpacing = -9e20;
+	double z = -9e20;
         
         int column = 0;
         while (std::getline(lineStream,field,',')) {
@@ -94,10 +104,15 @@ private:
           case 5:
             r = std::stod(field);
             break;
+	  case 6:
+	    z = std::stod(field);
+	    break;
           case 7:
             tiltAngle = std::stod(field);
             // Convert to radians
             tiltAngle *= 0.017453292519943;
+	    // Change to complement
+	    tiltAngle = 1.57079632679 - tiltAngle;
             break;
           case 11:
             sensorSpacing = std::stod(field);
@@ -116,6 +131,7 @@ private:
         rMap_.insert({detId,r});
         tiltAngleMap_.insert({detId,tiltAngle});
         sensorSpacingMap_.insert({detId,sensorSpacing});
+	zMap_.insert({detId,z});
         
         ++nLine;
     }

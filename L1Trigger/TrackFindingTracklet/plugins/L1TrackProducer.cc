@@ -204,7 +204,7 @@ L1TrackProducer::L1TrackProducer(edm::ParameterSet const& iConfig) :
 
   geometryType_ = iConfig.getUntrackedParameter<string>("trackerGeometryType","");
 
-  tiltedGeometryFile = iConfig.getParameter<edm::FileInPath> ("tiltedGeometryFile");
+  tiltedGeometryFile = iConfig.getParameter<edm::FileInPath>("tiltedGeometryFile");
 
   eventnum=0;
   if (asciiEventOutName_!="") {
