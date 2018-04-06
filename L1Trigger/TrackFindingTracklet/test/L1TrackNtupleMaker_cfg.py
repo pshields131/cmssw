@@ -43,7 +43,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:upgradePLS3', '')
 # input and output
 ############################################################
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10000))
 
 if GEOMETRY == "D17":
     #D17 (tilted barrel -- latest and greatest with T5 tracker, see: https://github.com/cms-sw/cmssw/blob/CMSSW_9_3_0_pre2/Configuration/Geometry/README.md)
@@ -55,7 +55,37 @@ if GEOMETRY == "D17":
     #"/store/relval/CMSSW_9_3_0_pre2/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/92X_upgrade2023_realistic_v1_2023D17noPU-v1/00000/8635D976-7F68-E711-A61C-0CC47A4D765E.root",
     #"/store/relval/CMSSW_9_3_0_pre2/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/92X_upgrade2023_realistic_v1_2023D17noPU-v1/00000/AC12EC5C-7E68-E711-B924-0025905A613C.root",
     #"/store/relval/CMSSW_9_3_0_pre2/RelValSingleMuPt10Extended/GEN-SIM-DIGI-RAW/92X_upgrade2023_realistic_v1_2023D17noPU-v1/00000/406F81DA-9D68-E711-B026-0CC47A7C3434.root"
-    "/store/relval/CMSSW_9_3_0_pre2/RelValSingleMuPt1Extended/GEN-SIM-DIGI-RAW/92X_upgrade2023_realistic_v1_2023D17noPU-v1/00000/26FEADC4-9E68-E711-B172-0025905B8594.root"
+    #"/store/relval/CMSSW_9_3_0_pre2/RelValSingleMuPt1Extended/GEN-SIM-DIGI-RAW/92X_upgrade2023_realistic_v1_2023D17noPU-v1/00000/26FEADC4-9E68-E711-B172-0025905B8594.root"
+    # ttbar PU200
+    #"/store/relval/CMSSW_9_3_0_pre2/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU25ns_92X_upgrade2023_realistic_v1_2023D17PU200-v4/00000/028AC021-016B-E711-B2D0-24BE05C4F8D2.root",
+    #"/store/relval/CMSSW_9_3_0_pre2/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU25ns_92X_upgrade2023_realistic_v1_2023D17PU200-v4/00000/06A77FC1-036B-E711-88BA-E0071B7AA7D0.root",
+    #"/store/relval/CMSSW_9_3_0_pre2/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU25ns_92X_upgrade2023_realistic_v1_2023D17PU200-v4/00000/06ADDEEB-006B-E711-9175-E0071B6B26F0.root",
+    #"/store/relval/CMSSW_9_3_0_pre2/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU25ns_92X_upgrade2023_realistic_v1_2023D17PU200-v4/00000/0C68A723-036B-E711-95C5-E0071B7AE7D0.root",
+    #"/store/relval/CMSSW_9_3_0_pre2/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU25ns_92X_upgrade2023_realistic_v1_2023D17PU200-v4/00000/109672A6-006B-E711-8628-80000025FE80.root",
+    #"/store/relval/CMSSW_9_3_0_pre2/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU25ns_92X_upgrade2023_realistic_v1_2023D17PU200-v4/00000/12791FD3-006B-E711-97D4-80000025FE80.root",
+
+    #"file:SingMuMinus/step2_90.root",
+    #"file:SingMuMinus/step2_91.root",
+    #"file:SingMuMinus/step2_92.root",
+    #"file:SingMuMinus/step2_100.root",
+    #"file:SingMuMinus/step2_82.root",
+    "file:SingMuMinus/step2_83.root",
+    "file:SingMuMinus/step2_85.root",
+    "file:SingMuMinus/step2_87.root",
+    "file:SingMuMinus/step2_89.root",  
+    "file:SingMuMinus/step2_94.root"
+
+    #"file:SingMuPlus/step2_95.root",
+    #"file:SingMuPlus/step2_96.root",
+    #"file:SingMuPlus/step2_97.root",
+    #"file:SingMuPlus/step2_101.root",
+    #"file:SingMuPlus/step2_84.root",
+    #"file:SingMuPlus/step2_86.root",
+    #"file:SingMuPlus/step2_88.root",
+    #"file:SingMuPlus/step2_93.root",
+    #"file:SingMuPlus/step2_98.root",
+    #"file:SingMuPlus/step2_99.root"
+    
 )
 elif GEOMETRY == "tilted":
     Source_Files = cms.untracked.vstring(
@@ -65,8 +95,7 @@ elif GEOMETRY == "tilted":
 process.source = cms.Source("PoolSource", fileNames = Source_Files)
 
 #process.TFileService = cms.Service("TFileService", fileName = cms.string('TTbar_'+GEOMETRY+'_PU0_EM_1000_trunc_conloose.root'), closeFileFast = cms.untracked.bool(True))
-process.TFileService = cms.Service("TFileService", fileName = cms.string('SingMuon_pt1_'+GEOMETRY+'_PU0_EM_1000.root'), closeFileFast = cms.untracked.bool(True))
-
+process.TFileService = cms.Service("TFileService", fileName = cms.string('SingleMuMinus2to10_'+GEOMETRY+'_PU0_EM_10000_2.root'), closeFileFast = cms.untracked.bool(True))
 
 ############################################################
 # L1 tracking
@@ -120,10 +149,10 @@ process.TTTracksEmulationWithTruth = cms.Path(process.L1TrackletEmulationTracksW
 ############################################################
 
 process.L1TrackNtuple = cms.EDAnalyzer('L1TrackNtupleMaker',
-                                       MyProcess = cms.int32(1),
+                                       MyProcess = cms.int32(13),
                                        DebugMode = cms.bool(False),      # printout lots of debug statements
                                        SaveAllTracks = cms.bool(True),   # save *all* L1 tracks, not just truth matched to primary particle
-                                       SaveStubs = cms.bool(True),      # save some info for *all* stubs
+                                       SaveStubs = cms.bool(True),       # save some info for *all* stubs
                                        L1Tk_nPar = cms.int32(4),         # use 4 or 5-parameter L1 track fit ??
                                        L1Tk_minNStub = cms.int32(4),     # L1 tracks with >= 4 stubs
                                        TP_minNStub = cms.int32(4),       # require TP to have >= X number of stubs associated with it
