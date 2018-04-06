@@ -72,7 +72,7 @@ public:
     for (int i=0;i<entries_;i++){
       //cout << "i "<<i<<endl;
       unsigned int tt = table_[i];
-      out<<"0x" <<std::hex<<tt<<endl;
+      out <<std::hex<<tt<<endl;
     }
     out.close();
   }

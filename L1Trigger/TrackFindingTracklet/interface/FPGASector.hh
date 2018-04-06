@@ -5,8 +5,6 @@
 #define FPGASECTOR_H
 
 #include "FPGAInputLink.hh"
-#include "FPGAStubLayer.hh"
-#include "FPGAStubDisk.hh"
 #include "FPGAAllStubs.hh"
 #include "FPGAVMStubsTE.hh"
 #include "FPGAVMStubsME.hh"
@@ -20,8 +18,6 @@
 #include "FPGATrackFit.hh"
 #include "FPGACleanTrack.hh"
 
-#include "FPGALayerRouter.hh"
-#include "FPGADiskRouter.hh"
 #include "FPGAVMRouterME.hh"
 #include "FPGAVMRouterTE.hh"
 #include "FPGATrackletEngine.hh"
@@ -84,14 +80,6 @@ public:
       IL_.push_back(new FPGAInputLink(memName,isector_,phimin_,phimax_));
       Memories_[memName]=IL_.back();
       MemoriesV_.push_back(IL_.back());
-    } else if (memType=="StubsByLayer:") {
-      SL_.push_back(new FPGAStubLayer(memName,isector_,phimin_,phimax_));
-      Memories_[memName]=SL_.back();
-      MemoriesV_.push_back(SL_.back());
-    } else if (memType=="StubsByDisk:") {
-      SD_.push_back(new FPGAStubDisk(memName,isector_,phimin_,phimax_));
-      Memories_[memName]=SD_.back();
-      MemoriesV_.push_back(SD_.back());
     } else if (memType=="AllStubs:") {
       AS_.push_back(new FPGAAllStubs(memName,isector_,phimin_,phimax_));
       Memories_[memName]=AS_.back();
@@ -148,13 +136,7 @@ public:
   }
 
   void addProc(string procType,string procName){
-    if (procType=="LayerRouter:") {
-      LR_.push_back(new FPGALayerRouter(procName,isector_));
-      Processes_[procName]=LR_.back();
-    }else if (procType=="DiskRouter:") {
-      DR_.push_back(new FPGADiskRouter(procName,isector_));
-      Processes_[procName]=DR_.back();
-    } else if (procType=="VMRouterTE:") {
+    if (procType=="VMRouterTE:") {
       VMRTE_.push_back(new FPGAVMRouterTE(procName,isector_));
       Processes_[procName]=VMRTE_.back();
     } else if (procType=="VMRouterME:") {
@@ -258,18 +240,6 @@ public:
     }
   }
 
-  void writeSL(bool first) {
-    for (unsigned int i=0;i<SL_.size();i++){
-      SL_[i]->writeStubs(first);
-    }
-  }
-
-  void writeSD(bool first) {
-    for (unsigned int i=0;i<SD_.size();i++){
-      SD_[i]->writeStubs(first);
-    }
-  }
-
   void writeVMSTE(bool first) {
     for (unsigned int i=0;i<VMSTE_.size();i++){
       VMSTE_[i]->writeStubs(first);
@@ -357,19 +327,6 @@ public:
     
     for(unsigned int i=0;i<MemoriesV_.size();i++) {
       MemoriesV_[i]->clean();
-    }
-  }
-
-
-  void executeLR(){
-    for (unsigned int i=0;i<LR_.size();i++){
-      LR_[i]->execute();
-    }
-  }
-
-  void executeDR(){
-    for (unsigned int i=0;i<DR_.size();i++){
-      DR_[i]->execute();
     }
   }
 
@@ -510,30 +467,6 @@ public:
     return tmp;
   }
 
-  std::vector<FPGAStub*> getLayerStubs(int lay){
-    std::vector<FPGAStub*> tmp;
-    for(unsigned int i=0;i<SL_.size();i++){
-      for(unsigned int j=0;j<SL_[i]->nStubs();j++){
-	if (SL_[i]->getFPGAStub(j)->layer().value()+1==lay) {
-	  tmp.push_back(SL_[i]->getFPGAStub(j));
-	}
-      }
-    }
-    return tmp;
-  }
-
-  std::vector<FPGAStub*> getDiskStubs(int disk){
-    std::vector<FPGAStub*> tmp;
-    for(unsigned int i=0;i<SD_.size();i++){
-      for(unsigned int j=0;j<SD_[i]->nStubs();j++){
-	if (SD_[i]->getFPGAStub(j)->disk().value()==disk) {
-	  tmp.push_back(SD_[i]->getFPGAStub(j));
-	}
-      }
-    }
-    return tmp;
-  }
-
   double phimin() const {return phimin_;}
   double phimax() const {return phimax_;}
 
@@ -549,8 +482,6 @@ private:
   std::map<string, FPGAMemoryBase*> Memories_;
   std::vector<FPGAMemoryBase*> MemoriesV_;
   std::vector<FPGAInputLink*> IL_;
-  std::vector<FPGAStubLayer*> SL_;
-  std::vector<FPGAStubDisk*> SD_;
   std::vector<FPGAAllStubs*> AS_;
   std::vector<FPGAVMStubsTE*> VMSTE_;
   std::vector<FPGAVMStubsME*> VMSME_;
@@ -565,8 +496,6 @@ private:
   std::vector<FPGACleanTrack*> CT_;
   
   std::map<string, FPGAProcessBase*> Processes_;
-  std::vector<FPGALayerRouter*> LR_;
-  std::vector<FPGADiskRouter*> DR_;
   std::vector<FPGAVMRouterTE*> VMRTE_;
   std::vector<FPGAVMRouterME*> VMRME_;
   std::vector<FPGATrackletEngine*> TE_;

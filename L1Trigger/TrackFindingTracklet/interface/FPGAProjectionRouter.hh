@@ -28,21 +28,11 @@ public:
     if (subname=="L4") layer_=4;
     if (subname=="L5") layer_=5;
     if (subname=="L6") layer_=6;
-    if (subname=="F1") disk_=1;
-    if (subname=="F2") disk_=2;
-    if (subname=="F3") disk_=3;
-    if (subname=="F4") disk_=4;
-    if (subname=="F5") disk_=5;
     if (subname=="D1") disk_=1;
     if (subname=="D2") disk_=2;
     if (subname=="D3") disk_=3;
     if (subname=="D4") disk_=4;
     if (subname=="D5") disk_=5;
-    if (subname=="B1") disk_=-1;
-    if (subname=="B2") disk_=-2;
-    if (subname=="B3") disk_=-3;
-    if (subname=="B4") disk_=-4;
-    if (subname=="B5") disk_=-5;
     assert(disk_!=0||layer_!=0);
     allproj_=0;
   }
@@ -143,18 +133,6 @@ public:
       inputproj_.push_back(tmp);
       return;
     }
-    if (input=="projplusin"){
-      FPGATrackletProjections* tmp=dynamic_cast<FPGATrackletProjections*>(memory);
-      assert(tmp!=0);
-      inputplusproj_=tmp;
-      return;
-    }
-    if (input=="projminusin"){
-      FPGATrackletProjections* tmp=dynamic_cast<FPGATrackletProjections*>(memory);
-      assert(tmp!=0);
-      inputminusproj_=tmp;
-      return;
-    }
     cout << "Could not find input : "<<input<<" in "<<getName()<<endl;
     assert(0);
   }
@@ -165,6 +143,10 @@ public:
 
     unsigned int count=0;
 
+    int lastTCID=-1;
+    int lastTCIDplus=-1;
+    int lastTCIDminus=-1;
+    
     if (layer_!=0) {
       for (unsigned int j=0;j<inputproj_.size();j++){
 	//cout << "FPGAPRojectionRouter Inputproj : "<<inputproj_[j]->getName()<<" "
@@ -210,6 +192,32 @@ public:
 	  assert(allproj_!=0);
 
 	  unsigned int index=allproj_->nTracklets();
+
+	  FPGATracklet* tracklet=inputproj_[j]->getFPGATracklet(i);
+
+	  //Thisblock of code just checks that the configuration is consistent
+	  if (tracklet->minusNeighbor(layer_)) {
+	    //cout << "For minus: tracklet TCID "<<tracklet<<" "<<tracklet->TCID()<<" "<<inputproj_[j]->getName()<<endl;
+	    if (lastTCIDminus>=tracklet->TCID()) {
+	      cout << "Wrong TCID ordering for Minus projections in "<<getName()<<" last "<<lastTCIDminus<<" "<<tracklet->TCID()<<endl;
+	    } else {
+	      lastTCIDminus=tracklet->TCID();
+	    }
+	  } else if (tracklet->plusNeighbor(layer_)) {
+	    if (lastTCIDplus>=tracklet->TCID()) {
+	      cout << "Wrong TCID ordering for Plus projections in "<<getName()<<" last "<<lastTCIDplus<<" "<<tracklet->TCID()<<endl;
+	    } else {
+	      lastTCIDplus=tracklet->TCID();
+	    }
+	  } else {
+	    if (lastTCID>=tracklet->TCID()) {
+	      cout << "Wrong TCID ordering for projections in "<<getName()<<endl;
+	    } else {
+	      lastTCID=tracklet->TCID();
+	    }
+	  }
+
+	  
 	  if (!(inputproj_[j]->getFPGATracklet(i)->minusNeighbor(layer_)||
 		inputproj_[j]->getFPGATracklet(i)->plusNeighbor(layer_))){
 	    //cout << "layer minusNeighbor plusNeighbor homeSector iSector :"
@@ -356,8 +364,6 @@ private:
   int disk_; 
 
   vector<FPGATrackletProjections*> inputproj_;
-  FPGATrackletProjections* inputplusproj_;
-  FPGATrackletProjections* inputminusproj_;
 
   FPGAAllProjections* allproj_;
   FPGAVMProjections* vmprojPHI1_;

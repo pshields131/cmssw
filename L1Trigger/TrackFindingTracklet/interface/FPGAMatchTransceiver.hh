@@ -110,7 +110,11 @@ public:
 	//This allows for equal TCIDs. This means that we can e.g. have a track seeded
 	//in L1L2 that projects to both L3 and D4. The algorithm will pick up the first hit and
 	//drop the second
-	assert(tmp[i-1].first->TCID()<=tmp[i].first->TCID());
+	if (tmp[i-1].first->TCID()>tmp[i].first->TCID()) {
+	  cout << "Wrong TCID order in "<<getName()<<" "<<tmp[i-1].first->TCID()
+				     <<" "<<tmp[i].first->TCID()<<endl;
+	  //assert(0);
+	}
       }
     }
     //cout << endl;

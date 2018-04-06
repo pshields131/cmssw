@@ -3,6 +3,11 @@
 #define FPGAVMROUTERTE_H
 
 #include "FPGAProcessBase.hh"
+#include "FPGATETableOuter.hh"
+#include "FPGATETableInner.hh"
+#include "FPGATETableOuterDisk.hh"
+#include "FPGATETableInnerDisk.hh"
+#include "FPGATETableInnerOverlap.hh"
 
 using namespace std;
 
@@ -152,36 +157,57 @@ public:
   }
 
   void execute(){
-
-    //if (debug1) {
-    //  cout << "FPGAVMRouter::execute "<<getName()<<endl;
-    //}
-      
+  
     assert(stubinputs_.size()!=0);
 
     unsigned int count=0;
+
+    unsigned int indexphi1=0, indexphi2=0, indexphi3=0, indexphi4=0;
+    unsigned int indexphiex=0;
  
-    if (layer_!=0){
+    if (layer_!=0){  //First handle layer stubs
       for(unsigned int j=0;j<stubinputs_.size();j++){
-	//cout << "FPGAVMRouterTE::execute : "<<stubinputs_[j]->getName() << " " << stubinputs_[j]->nStubs() << endl;
 	for(unsigned int i=0;i<stubinputs_[j]->nStubs();i++){
 	  count++;
 	  if (count>MAXVMROUTER) continue;
 	  std::pair<FPGAStub*,L1TStub*> stub=stubinputs_[j]->getStub(i);
-
+          
 	  int iphiRaw=stub.first->iphivmRaw();
 
 	  bool insert=false;
 
+          // stub index mapping to the corresponding AS memory filled by VMRouterME
+          int asindex = 0;
+          if (stub.first->phiregion()==1) asindex = indexphi1++;
+          else if (stub.first->phiregion()==2) asindex = indexphi2++;
+          else if (stub.first->phiregion()==3) asindex = indexphi3++;
+          else if (stub.first->phiregion()==4) asindex = indexphi4++;
+          else {
+            // Stub iphiRaw<4 or iphiRaw>27. It is used in TE but not ME, and is not stored in the AS memory filled by VMRouterME. Use an extra index to keep track of them.
+            asindex = indexphiex++;
+          }
+      
+          stub.first->setAllStubIndex(asindex);
+          stub.second->setAllStubIndex(asindex);
+
+          stub.first->setAllStubAddressTE(allstubs_[0]->nStubs());
+
+	  for (unsigned int l=0;l<allstubs_.size();l++){
+	    allstubs_[l]->addStub(stub);
+	  }
+      
 	  if (getName()=="VMRTE_L2PHIW"||getName()=="VMRTE_L2PHIQ") {
 	    //special case where even even layer is treated as an odd (inner layer)
+            assert(layer_==2);
+            int binlookup=lookupInnerOverlapLayer(stub.first);
+            if (binlookup==-1) continue;
+            stub.first->setVMBits(binlookup);
+
 	    iphiRaw-=4;
 	    assert(iphiRaw>=0);
 	    assert(iphiRaw<24);
-	    //cout << "iphiRaw = "<<iphiRaw<<" "<<getName()<<" "<<overlap_<<endl;
 	    if (overlap_) iphiRaw>>=2;
-	    //cout << "iphiRaw = "<<iphiRaw<<" "<<getName()<<" "<<overlap_<<endl;
-	    //cout << "getName "<<getName()<<" "<<vmstubsPHI_[iphiRaw].size()<<endl;
+
 	    for (unsigned int l=0;l<vmstubsPHI_[iphiRaw].size();l++){
 	      if (debug1) {
 		cout << "FPGAVMRouterTE added stub to : "<<vmstubsPHI_[iphiRaw][l]->getName()<<endl;
@@ -189,73 +215,110 @@ public:
 	      vmstubsPHI_[iphiRaw][l]->addStub(stub);
 	      insert=true;
 	    }
-	  }  else {	    
-	    if (stub.first->layer().value()%2==0) {
-	      //cout << "Odd layer : "<<iphiRaw<<endl;
-	      //odd layers here
+	  }  else {
+            int binlookup=-1;
+            if (overlap_) {
+              assert(layer_==1);
+              binlookup=lookupInnerOverlapLayer(stub.first);
+            } else {
+              switch (layer_) {
+              case 2 : binlookup=lookupOuterLayer(stub.first);
+                break;
+              case 4 : binlookup=lookupOuterLayer(stub.first);
+                break;
+              case 6 : binlookup=lookupOuterLayer(stub.first);
+                break;
+              case 1 : binlookup=lookupInnerLayer(stub.first);
+                break;
+              case 3 : binlookup=lookupInnerLayer(stub.first);
+                break;
+              case 5 : binlookup=lookupInnerLayer(stub.first);
+                break;
+              default : assert(0);
+              }
+            }
+            if (binlookup==-1) continue;
+            stub.first->setVMBits(binlookup);
+	    if (stub.first->layer().value()%2==0) { //odd layers
 	      iphiRaw-=4;
 	      assert(iphiRaw>=0);
 	      assert(iphiRaw<24);
-	      //cout << "iphiRaw = "<<iphiRaw<<" "<<getName()<<" "<<overlap_<<endl;
-	      if (overlap_) iphiRaw>>=2;
-	      //cout << "iphiRaw = "<<iphiRaw<<" "<<getName()<<" "<<overlap_<<endl;
-	      //cout << "getName "<<getName()<<" "<<vmstubsPHI_[iphiRaw].size()<<endl;
+	      if (overlap_) {
+                iphiRaw>>=2;
+              }
 	      for (unsigned int l=0;l<vmstubsPHI_[iphiRaw].size();l++){
-		//cout << "FPGAVMRouterTE added stub to : "<<vmstubsPHI_[iphiRaw][l]->getName()<<endl;
 		vmstubsPHI_[iphiRaw][l]->addStub(stub);
+		if (debug1) {
+		  cout << getName()<<" adding stub to "<<vmstubsPHI_[iphiRaw][l]->getName()<<endl;
+		}
 		insert=true;
 	      }
-	    }
-	    else {
-	      //cout << "Even layer : "<<iphiRaw<<endl;
-	      //even layers here
+	    } else {  //even layers
 	      iphiRaw/=2;
 	      assert(iphiRaw>=0);
 	      assert(iphiRaw<16);
 	      for (unsigned int l=0;l<vmstubsPHI_[iphiRaw].size();l++){
-		//cout << "FPGAVMRouterTE added stub to : "<<vmstubsPHI_[iphiRaw][l]->getName()<<endl;
 		vmstubsPHI_[iphiRaw][l]->addStub(stub);
+		if (debug1) {
+		  cout << getName()<<" adding stub to "<<vmstubsPHI_[iphiRaw][l]->getName()<<endl;
+		}
 		insert=true;
 	      }
 	    }
 	  }
-	    
 
-	  stub.first->setAllStubIndex(allstubs_[0]->nStubs());
-	  stub.second->setAllStubIndex(allstubs_[0]->nStubs());
-
-	  for (unsigned int l=0;l<allstubs_.size();l++){
-	    allstubs_[l]->addStub(stub);
-	  }
-
-	  //cout << "FPGAVMRouterTE "<<getName()<<" "<<stub.first->iphivmRaw()<<endl;
-	  
 	  assert(insert);
 	}
       }
 
     }
     if (disk_!=0) {
-      //cout << "FPGAVMRouterTE stubs in disk" <<endl;
       for(unsigned int j=0;j<stubinputs_.size();j++){
 	for(unsigned int i=0;i<stubinputs_[j]->nStubs();i++){
 	  std::pair<FPGAStub*,L1TStub*> stub=stubinputs_[j]->getStub(i);
-	  //cout << "Found stub in disk in "<<getName()<<"  r = "<<stub.second->r()<<endl;
-	  //
-
 	  if (!stub.second->isPSmodule()) continue;
 	  
 	  int iphiRaw=stub.first->iphivmRaw();
 
 	  bool insert=false;
 
+          // stub index mapping to the corresponding AS memory filled by VMRouterME
+          int asindex = 0;
+          if (stub.first->phiregion()==1) asindex = indexphi1++;
+          else if (stub.first->phiregion()==2) asindex = indexphi2++;
+          else if (stub.first->phiregion()==3) asindex = indexphi3++;
+          else if (stub.first->phiregion()==4) asindex = indexphi4++;
+          else {
+            // Stub iphiRaw<4 or iphiRaw>27. It is used in TE but not ME, and is not stored in the AS memory filled by VMRouterME. Use an extra index to keep track of them.
+            asindex = indexphiex++;
+          }
+
+          stub.first->setAllStubIndex(asindex);
+          stub.second->setAllStubIndex(asindex);
+
+          stub.first->setAllStubAddressTE(allstubs_[0]->nStubs());
+
+          for (unsigned int l=0;l<allstubs_.size();l++){
+	    allstubs_[l]->addStub(stub);
+	  }
+          
 	  if (getName()=="VMRTE_D1PHIW"||getName()=="VMRTE_D1PHIQ") {
 	    //special case where odd disk is treated as outer disk
+
+            if (overlap_){
+              if (stub.first->layer().value()>=0) continue; //FIXME skip layer hit for now
+              int binlookup=lookupOuterOverlapD1(stub.first);
+              assert(binlookup>=0);
+              stub.first->setVMBits(binlookup);
+            } else {
+              assert(0);
+
+            }
+            
 	    iphiRaw/=2;
 	    assert(iphiRaw>=0);
 	    assert(iphiRaw<16);
 	    iphiRaw>>=1; //only 8 VMS in even disks
-	    //cout << "FPGAVMRouterTE "<<getName()<<" 2 stubs in disk iphiRaw "<<iphiRaw <<endl;
 	    for (unsigned int l=0;l<vmstubsPHI_[iphiRaw].size();l++){
 	      if (debug1) { 
 		cout << "FPGAVMRouterTE added stub to : "<<vmstubsPHI_[iphiRaw][l]->getName()<<endl;
@@ -273,9 +336,27 @@ public:
 		getName()=="VMRTE_D2PHIC"||
 		getName()=="VMRTE_D2PHID"
 		) {
+
+              int binlookup=-1;
+              
+              switch (disk_) {
+              case 2 : binlookup=lookupOuterDisk(stub.first);
+                break;
+              case 4 : binlookup=lookupOuterDisk(stub.first);
+                break;
+              case 1 : binlookup=lookupInnerDisk(stub.first);
+                break;
+              case 3 : binlookup=lookupInnerDisk(stub.first);
+                break;
+              default : assert(0);  
+              }
+              if (binlookup==-1) continue;
+              stub.first->setVMBits(binlookup);
+
+              
+              
 	      if (abs(stub.first->disk().value())%2==1) {
 		//odd disks here
-		//cout << "odd disk"<<endl;
 		if (overlap_) {
 		  iphiRaw>>=1; //only 12 VMS in odd disks
 		} else {
@@ -285,9 +366,7 @@ public:
 		  iphiRaw>>=1; //only 12 VMS in odd disks
 		}
 		
-		//cout << "FPGAVMRouterTE "<<getName()<<" overlap_ = "<<overlap_<<" stubs in disk iphiRaw "<<iphiRaw<<endl;
 		for (unsigned int l=0;l<vmstubsPHI_[iphiRaw].size();l++){
-		  //cout << "FPGAVMRouterTE added stub to : "<<vmstubsPHI_[iphiRaw][l]->getName()<<" "<<stub.second->r()<<endl;	     
 		  vmstubsPHI_[iphiRaw][l]->addStub(stub);
 		  insert=true;
 		}
@@ -297,14 +376,36 @@ public:
 		iphiRaw/=2;
 		assert(iphiRaw>=0);
 		assert(iphiRaw<16);
-		//cout << "FPGAVMRouterTE "<<getName()<<" 2 stubs in disk iphiRaw "<<iphiRaw <<endl;
 		for (unsigned int l=0;l<vmstubsPHI_[iphiRaw].size();l++){
-		  //cout << "FPGAVMRouterTE added stub to : "<<vmstubsPHI_[iphiRaw][l]->getName()<<endl;
 		  vmstubsPHI_[iphiRaw][l]->addStub(stub);
 		  insert=true;
 		}
 	      }
 	    } else {
+
+              int binlookup=-1;
+
+              if (!overlap_) {
+                switch (disk_) {
+                case 2 : binlookup=lookupOuterDisk(stub.first);
+                  break;
+                case 4 : binlookup=lookupOuterDisk(stub.first);
+                  break;
+                case 1 : binlookup=lookupInnerDisk(stub.first);
+                  break;
+                case 3 : binlookup=lookupInnerDisk(stub.first);
+                  break;
+                default : assert(0);  
+                }
+              } else {
+                assert(disk_==1);
+                binlookup=lookupOuterOverlapD1(stub.first);
+              }
+              
+              if (binlookup==-1) continue;
+              stub.first->setVMBits(binlookup);
+
+              
 	      if (abs(stub.first->disk().value())%2==1) {
 		//odd disks here
 		if (overlap_) {
@@ -315,9 +416,7 @@ public:
 		  assert(iphiRaw<24);
 		  iphiRaw>>=2; //only 6 VMS in odd disks
 		}
-		//cout << "FPGAVMRouterTE "<<getName()<<" overlap_ = "<<overlap_<<" stubs in disk iphiRaw "<<iphiRaw<<endl;
 		for (unsigned int l=0;l<vmstubsPHI_[iphiRaw].size();l++){
-		  //cout << "FPGAVMRouterTE added stub to : "<<vmstubsPHI_[iphiRaw][l]->getName()<<" "<<stub.second->r()<<endl;	     
 		  vmstubsPHI_[iphiRaw][l]->addStub(stub);
 		  insert=true;
 		}
@@ -328,24 +427,13 @@ public:
 		assert(iphiRaw>=0);
 		assert(iphiRaw<16);
 		iphiRaw>>=1; //only 8 VMS in even disks
-		//cout << "FPGAVMRouterTE "<<getName()<<" 2 stubs in disk iphiRaw "<<iphiRaw <<endl;
 		for (unsigned int l=0;l<vmstubsPHI_[iphiRaw].size();l++){
-		  //cout << "FPGAVMRouterTE added stub to : "<<vmstubsPHI_[iphiRaw][l]->getName()<<endl;
 		  vmstubsPHI_[iphiRaw][l]->addStub(stub);
 		  insert=true;
 		}
 	      }
 
 	    }
-	  }
-
-
-	  stub.first->setAllStubIndex(allstubs_[0]->nStubs());
-	  stub.second->setAllStubIndex(allstubs_[0]->nStubs());
-	  
-	  for (unsigned int l=0;l<allstubs_.size();l++){
-	    //cout << "FPGAVMRouterTE added stub to : "<<allstubs_[l]->getName()<<" "<<stub.second->r()<<endl;	     
-	    allstubs_[l]->addStub(stub);
 	  }
 
 	  if (!insert) {
@@ -376,7 +464,181 @@ public:
 
   }
 
+  int lookupOuterOverlapD1(FPGAStub* stub){
 
+    assert(disk_==1);
+    
+    static FPGATETableOuterDisk outerTableOverlapD1;
+    static bool first=true;
+
+    if (first) {
+      outerTableOverlapD1.init(1,7,3);
+      first=false;
+    }
+    
+    FPGAWord r=stub->r();
+    FPGAWord z=stub->z();
+    int rbin=(r.value())>>(r.nbits()-7);
+    int zbin=(z.value()+(1<<(z.nbits()-1)))>>(z.nbits()-3);
+    bool negdisk=stub->disk().value()<0;
+    if (negdisk) zbin=7-zbin; //Should this be separate table?
+    return outerTableOverlapD1.lookup(rbin,zbin);
+
+  }
+
+
+  int lookupOuterDisk(FPGAStub* stub){
+
+    assert(disk_==2||disk_==4);
+    
+    static FPGATETableOuterDisk outerTableD2;
+    static FPGATETableOuterDisk outerTableD4;
+    static bool first=true;
+
+    if (first) {
+      outerTableD2.init(2,7,3);
+      outerTableD4.init(4,7,3);
+      first=false;
+    }
+    
+    FPGAWord r=stub->r();
+    FPGAWord z=stub->z();
+    int rbin=(r.value())>>(r.nbits()-7);
+    int zbin=(z.value()+(1<<(z.nbits()-1)))>>(z.nbits()-3);
+    bool negdisk=stub->disk().value()<0;
+    if (negdisk) zbin=7-zbin; //Should this be separate table?
+    switch (disk_){
+    case 2: return outerTableD2.lookup(rbin,zbin);
+      break;
+    case 4: return outerTableD4.lookup(rbin,zbin);
+      break;
+    }
+    assert(0);
+  }
+
+
+  int lookupInnerDisk(FPGAStub* stub){
+
+    assert(disk_==1||disk_==3);
+    
+    static FPGATETableInnerDisk innerTableD1;
+    static FPGATETableInnerDisk innerTableD3;
+    static bool first=true;
+
+    if (first) {
+      innerTableD1.init(1,2,7,3);
+      innerTableD3.init(3,4,7,3);
+      first=false;
+    }
+    
+    FPGAWord r=stub->r();
+    FPGAWord z=stub->z();
+    int rbin=(r.value())>>(r.nbits()-7);
+    int zbin=(z.value()+(1<<(z.nbits()-1)))>>(z.nbits()-3);
+    bool negdisk=stub->disk().value()<0;
+    if (negdisk) zbin=7-zbin; //Should this be separate table?
+    switch (disk_){
+    case 1: return innerTableD1.lookup(rbin,zbin);
+      break;
+    case 3: return innerTableD3.lookup(rbin,zbin);
+      break;
+    }
+    assert(0);
+  }
+
+  int lookupOuterLayer(FPGAStub* stub){
+
+    assert(layer_==2||layer_==4||layer_==6);
+    
+    static FPGATETableOuter outerTableL2;
+    static FPGATETableOuter outerTableL4;
+    static FPGATETableOuter outerTableL6;
+    static bool first=true;
+
+    if (first) {
+      outerTableL2.init(2,7,4);
+      outerTableL4.init(4,7,4);
+      outerTableL6.init(6,7,4);
+      first=false;
+    }
+    
+    FPGAWord r=stub->r();
+    FPGAWord z=stub->z();
+    int zbin=(z.value()+(1<<(z.nbits()-1)))>>(z.nbits()-7);
+    int rbin=(r.value()+(1<<(r.nbits()-1)))>>(r.nbits()-4);
+    switch (layer_){
+    case 2: return outerTableL2.lookup(zbin,rbin);
+      break;
+    case 4: return outerTableL4.lookup(zbin,rbin);
+      break;
+    case 6: return outerTableL6.lookup(zbin,rbin);
+      break;
+    }
+    assert(0);
+  }
+
+
+  int lookupInnerLayer(FPGAStub* stub){
+
+    assert(layer_==1||layer_==3||layer_==5);
+    
+    static FPGATETableInner innerTableL1;
+    static FPGATETableInner innerTableL3;
+    static FPGATETableInner innerTableL5;
+    static bool first=true;
+
+    if (first) {
+      innerTableL1.init(1,2,7,4);
+      innerTableL3.init(3,4,7,4);
+      innerTableL5.init(5,6,7,4);
+      first=false;
+    }
+    
+    FPGAWord r=stub->r();
+    FPGAWord z=stub->z();
+    int zbin=(z.value()+(1<<(z.nbits()-1)))>>(z.nbits()-7);
+    int rbin=(r.value()+(1<<(r.nbits()-1)))>>(r.nbits()-4);
+    switch (layer_){
+    case 1: return innerTableL1.lookup(zbin,rbin);
+      break;
+    case 3: return innerTableL3.lookup(zbin,rbin);
+      break;
+    case 5: return innerTableL5.lookup(zbin,rbin);
+      break;
+    }
+    assert(0);
+  }
+
+
+  int lookupInnerOverlapLayer(FPGAStub* stub){
+
+    assert(layer_==1||layer_==2);
+    
+    static FPGATETableInnerOverlap innerTableOverlapL1;
+    static FPGATETableInnerOverlap innerTableOverlapL2;
+    static bool first=true;
+
+    if (first) {
+      innerTableOverlapL1.init(1,1,7,3);
+      innerTableOverlapL2.init(2,1,7,3);
+      first=false;
+    }
+    
+    FPGAWord r=stub->r();
+    FPGAWord z=stub->z();
+    int zbin=(z.value()+(1<<(z.nbits()-1)))>>(z.nbits()-7);
+    int rbin=(r.value()+(1<<(r.nbits()-1)))>>(r.nbits()-3);
+    switch (layer_){
+    case 1: return innerTableOverlapL1.lookup(zbin,rbin);
+      break;
+    case 2: return innerTableOverlapL2.lookup(zbin,rbin);
+      break;
+    }
+    assert(0);
+  }
+
+
+  
 
 private:
 

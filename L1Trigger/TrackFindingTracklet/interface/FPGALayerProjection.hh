@@ -74,16 +74,16 @@ public:
     ////Separate the vm projections into zbins
     ////This determines the central bin:
     ////int zbin=3-(zproj.value()>>(zproj.nbits()-3));
-    ////But we need some range: 
+    ////But we need some range:
     unsigned int zbin1=3-(((fpgazproj_.value()>>(fpgazproj_.nbits()-5))+1)>>2);
     unsigned int zbin2=3-(((fpgazproj_.value()>>(fpgazproj_.nbits()-5))-1)>>2);
-    if (zbin1>7) zbin1=0;
+    if (zbin1>7) zbin1=0; //note that zbin1 is unsigned
     if (zbin2>7) zbin2=7;
     assert(zbin1<=zbin2);
     assert(zbin2-zbin1<=1); 
     fpgazbin1projvm_.set(zbin1,3,true,__LINE__,__FILE__); // first z bin
     if (zbin1==zbin2) fpgazbin2projvm_.set(0,1,true,__LINE__,__FILE__); // don't need to check adjacent z bin
-    else              fpgazbin2projvm_.set(1,1,true,__LINE__,__FILE__); // do need to check adjacent z bin
+    else              fpgazbin2projvm_.set(1,1,true,__LINE__,__FILE__); // do need to check next z bin
 
     
     minusNeighbor_=minusNeighbor;

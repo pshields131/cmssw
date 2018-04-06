@@ -26,7 +26,7 @@ elif GEOMETRY == "D17":
     print "using geometry " + GEOMETRY + " (tilted)"
     process.load('Configuration.Geometry.GeometryExtended2023D17Reco_cff')
     process.load('Configuration.Geometry.GeometryExtended2023D17_cff')
-elif GEOMETRY == "tilted": 
+elif GEOMETRY == "TkOnly": 
     print "using standalone tilted (T5) tracker geometry" 
     process.load('L1Trigger.TrackTrigger.TkOnlyTiltedGeom_cff')
 else:
@@ -42,6 +42,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:upgradePLS3', '')
 ############################################################
 # input and output
 ############################################################
+
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10000))
 
@@ -89,8 +90,10 @@ if GEOMETRY == "D17":
 )
 elif GEOMETRY == "tilted":
     Source_Files = cms.untracked.vstring(
-        "file:MuMinus_1to10_TkOnly.root",
-        "file:MuPlus_1to10_TkOnly.root",
+    #"file:Electron_1to50_TkOnly.root",
+    #"file:Positron_1to50_TkOnly.root",
+    "file:MuPlus_1to50_TkOnly.root",
+    "file:MuMinus_1to50_TkOnly.root",
 )
 process.source = cms.Source("PoolSource", fileNames = Source_Files)
 
@@ -101,16 +104,20 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string('Single
 # L1 tracking
 ############################################################
 
-# remake stubs 
-
-# ===> IMPORTANT !!! stub window tuning as is by default in CMSSW is incorrect !!! <===
-
+# remake stubs ?
 process.load('L1Trigger.TrackTrigger.TrackTrigger_cff')
 from L1Trigger.TrackTrigger.TTStubAlgorithmRegister_cfi import *
+process.load("SimTracker.TrackTriggerAssociation.TrackTriggerAssociator_cff")
 
 if GEOMETRY == "D10": 
     TTStubAlgorithm_official_Phase2TrackerDigi_.zMatchingPS = cms.bool(False)
+
+if GEOMETRY != "TkOnly":
+    from SimTracker.TrackTriggerAssociation.TTClusterAssociation_cfi import *
+    TTClusterAssociatorFromPixelDigis.digiSimLinks = cms.InputTag("simSiPixelDigis","Tracker")
+
 process.TTClusterStub = cms.Path(process.TrackTriggerClustersStubs)
+process.TTClusterStubTruth = cms.Path(process.TrackTriggerAssociatorClustersStubs)
 
 from L1Trigger.TrackFindingTracklet.Tracklet_cfi import *
 
@@ -170,9 +177,18 @@ process.L1TrackNtuple = cms.EDAnalyzer('L1TrackNtupleMaker',
                                        TrackingParticleInputTag = cms.InputTag("mix", "MergedTrackTruth"),
                                        TrackingVertexInputTag = cms.InputTag("mix", "MergedTrackTruth"),
                                        tiltedGeometryFile = cms.FileInPath('L1Trigger/TrackFindingTracklet/test/allCoordinates.csv'),
+                                       ## tracking in jets stuff (--> requires AK4 genjet collection present!)
+                                       TrackingInJets = cms.bool(True),
+                                       GenJetInputTag = cms.InputTag("ak4GenJets", ""),
                                        )
 process.ana = cms.Path(process.L1TrackNtuple)
 
-#process.schedule = cms.Schedule(process.TTClusterStub,process.TTTracksWithTruth,process.ana)
-process.schedule = cms.Schedule(process.TTClusterStub,process.TTTracksEmulationWithTruth,process.ana)
+# use this if you want to re-run the stub making
+#process.schedule = cms.Schedule(process.TTClusterStub,process.TTClusterStubTruth,process.TTTracksEmulationWithTruth,process.ana)
+
+# use this if cluster/stub associators not available 
+#process.schedule = cms.Schedule(process.TTClusterStubTruth,process.TTTracksEmulationWithTruth,process.ana)
+
+# use this to only run tracking + track associator
+process.schedule = cms.Schedule(process.TTTracksEmulationWithTruth,process.ana)
 

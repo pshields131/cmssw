@@ -160,9 +160,9 @@ public:
   //Copy otherSector->inputprojections_ to this->outputprojections_ 
   void execute(FPGAProjectionTransceiver* otherSector){
 
-    if (debug1) {
-      cout << "FPGAProjectionTransceiver::execute "<<getName()<<endl;
-    }
+    //if (debug1) {
+    //  cout << "FPGAProjectionTransceiver::execute "<<getName()<<endl;
+    //}
     
     if (!doProjections) return;
 
@@ -178,7 +178,8 @@ public:
 	FPGATracklet* tracklet=otherProj->getFPGATracklet(l);
 	//Check that TCID is correctly ordered
 	if (oldTracklet!=0) {
-	  //cout << "PT::exectute: "<<oldTracklet->TCID()<<" "<<tracklet->TCID()<<endl;
+	  //cout << "PT::exectute: "<<getName()<<" "
+	  //     <<oldTracklet->TCID()<<" "<<tracklet->TCID()<<endl;
 	  assert(oldTracklet->TCID()<=tracklet->TCID());
 	}
 	oldTracklet=tracklet;
@@ -257,8 +258,10 @@ public:
 
 	int iphi=(iphivmRaw-4)>>3;
 
-	if (layer_==2||layer_==4||layer_==6) {
-	  iphi=iphivmRaw>>3;
+	if (!disk) {
+	  if (layer_==2||layer_==4||layer_==6) {
+	    iphi=iphivmRaw>>3;
+	  }
 	}
     
 	
@@ -270,74 +273,37 @@ public:
 
 	if (iphi==0) {
 	  if (layer) {
-	    //cout << "In getName = "<<getName()<<endl;
-	    if (outputprojLPHI1==0) {
-	      cout << "FPGAProjectionTransceiver in : "<<getName()<< " outputprojLPHI1 is zero"<<endl;
-	    }
-	    assert(outputprojLPHI1!=0);
-	    if (debug1) {
-	      cout << "Adding tracklet "<<otherProj->getFPGATracklet(l)<<" to "<<outputprojLPHI1->getName()<<endl;
-	    }
-	    outputprojLPHI1->addProj(otherProj->getFPGATracklet(l));
+	    addProj(outputprojLPHI1,"LPHI1",otherProj->getFPGATracklet(l));
 	  }
 	  if (disk) {
-	    if (outputprojDPHI1==0) {
-	      cout << "FPGAProjectionTransceiver in : "<<getName()<< " outputprojDPHI1 is zero"<<endl;
-	    }
-	    //cout << "In getName = "<<getName()<<endl;
-	    assert(outputprojDPHI1!=0);
-	    if (debug1) {
-	      cout << "Adding tracklet "<<otherProj->getFPGATracklet(l)<<" to "<<outputprojDPHI1->getName()<<endl;
-	    }
-	    outputprojDPHI1->addProj(otherProj->getFPGATracklet(l));
+	    addProj(outputprojDPHI1,"DPHI1",otherProj->getFPGATracklet(l));
 	  }
 	}
 
 	if (iphi==1) {
 	  if (layer) {
-	    if (outputprojLPHI2==0) {
-	      cout << "FPGAProjectionTransceiver in : "<<getName()<< " outputprojLPHI2 is zero"<<endl;
-	    }
-	    assert(outputprojLPHI2!=0);
-	    if (debug1) {
-	      cout << "Adding tracklet "<<otherProj->getFPGATracklet(l)<<" to "<<outputprojLPHI2->getName()<<endl;
-	    }
-	    outputprojLPHI2->addProj(otherProj->getFPGATracklet(l));
+	    addProj(outputprojLPHI2,"LPHI2",otherProj->getFPGATracklet(l));
 	  }
 	  if (disk) {
-	    if (outputprojDPHI2==0) {
-	      cout << "FPGAProjectionTransceiver in : "<<getName()<< " outputprojDPHI2 is zero"<<endl;
-	    }
-	    assert(outputprojDPHI2!=0);
-	    if (debug1) {
-	      cout << "Adding tracklet "<<otherProj->getFPGATracklet(l)<<" to "<<outputprojDPHI2->getName()<<endl;
-	    }
-	    outputprojDPHI2->addProj(otherProj->getFPGATracklet(l));
+	    addProj(outputprojDPHI2,"DPHI2",otherProj->getFPGATracklet(l));
+	  }
+	}
+
+	if (iphi==2) {
+	  if (layer) {
+	    addProj(outputprojLPHI3,"LPHI3",otherProj->getFPGATracklet(l));
+	  }
+	  if (disk) {
+	    addProj(outputprojDPHI3,"DPHI3",otherProj->getFPGATracklet(l));
 	  }
 	}
 	
-	if (iphi==2) {
+	if (iphi==3) {
 	  if (layer) {
-	    //cout << "In getName = "<<getName()<<endl;
-	    if (outputprojLPHI3==0) {
-	      cout << "FPGAProjectionTransceiver in : "<<getName()<< " outputprojLPHI3 is zero  - will skip"<<endl;
-	      //assert(outputprojLPHI3!=0);
-	    } else {
-	      if (debug1) {
-		cout << "Adding tracklet "<<otherProj->getFPGATracklet(l)<<" to "<<outputprojLPHI3->getName()<<endl;
-	      }
-	      outputprojLPHI3->addProj(otherProj->getFPGATracklet(l));
-	    }
+	    addProj(outputprojLPHI4,"LPHI4",otherProj->getFPGATracklet(l));
 	  }
 	  if (disk) {
-	    if (outputprojDPHI3==0) {
-	      cout << "FPGAProjectionTransceiver in : "<<getName()<< " outputprojDPHI3 is zero"<<endl;
-	    }
-	    assert(outputprojDPHI3!=0);
-	    if (debug1) {
-	      cout << "FPGAProjectionTransceiver add projection to : "<<outputprojDPHI3->getName()<<endl;
-	    }
-	    outputprojDPHI3->addProj(otherProj->getFPGATracklet(l));
+	    addProj(outputprojDPHI4,"DPHI4",otherProj->getFPGATracklet(l));
 	  }
 	}
 
@@ -351,6 +317,20 @@ public:
 	  << count << endl;
     }
 
+  }
+
+  void addProj(FPGATrackletProjections* outputproj, std::string name, FPGATracklet* otherProj){
+    //cout << "In getName = "<<getName()<<endl;
+    if (outputproj==0) {
+      if (warnNoMem) {
+	cout << "FPGAProjectionTransceiver in : "<<getName()<< " outputproj to "<<name<<" is zero  - will skip"<<endl;
+      }
+    } else {
+      if (debug1) {
+	cout << "Adding tracklet "<<otherProj<<" to "<<outputproj->getName()<<endl;
+      }
+      outputproj->addProj(otherProj);
+    }
   }
 
 

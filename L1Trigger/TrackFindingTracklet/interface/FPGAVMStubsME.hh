@@ -26,21 +26,22 @@ public:
       //cout << "FPGAVMStubsME::addStub "<<bin<<" "<<stub.first->z().value()<<" "<<stub.first->z().nbits()<<endl;
       assert(bin>=0);
       assert(bin<MEBins);
+      if (debug1) {
+	cout << getName() << " adding stub to bin "<<bin<<endl;
+      }
       binnedstubs_[bin].push_back(stub);
     }
-    else { // disk -- copied from VMStubTE
+    else { // disk 
       int ir = stub.first->r().value();
-      assert(NLONGVMRBITS==3); //This code is not generic...
-      int ir1=(rinnerdisk+(routerPSdisk-rinnerdisk)*0.25)/kr;
-      int ir2=(rinnerdisk+(routerPSdisk-rinnerdisk)*0.50)/kr;
-      int ir3=(rinnerdisk+(routerPSdisk-rinnerdisk)*0.75)/kr;
-      int offset=0;
-      if (stub.first->disk().value()<0) offset=4;
-      int bin=3+offset;
-      if (ir<ir3) bin=2+offset;
-      if (ir<ir2) bin=1+offset;
-      if (ir<ir1) bin=0+offset;
-      //cout << "Adding stub in bin " << bin << endl;
+      //presumably the VMRouter can use a lookup table for the bin.
+      //For now implement a simple cut
+      unsigned int bin=3;
+      if (stub.first->isPSmodule()){
+	if (ir<50.0/kr) bin=2;
+	if (ir<35.0/kr) bin=1;
+	if (ir<26.0/kr) bin=0;
+      }
+      if (stub.first->disk().value()<0) bin+=4;
       binnedstubs_[bin].push_back(stub);
     }
   }

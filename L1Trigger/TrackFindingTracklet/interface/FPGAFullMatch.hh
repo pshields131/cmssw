@@ -58,9 +58,14 @@ public:
     std::pair<FPGATracklet*,std::pair<FPGAStub*,L1TStub*> > tmp(tracklet,stub);
     //Check that we have the right TCID order
     if (matches_.size()>0) {
-      //cout << matches_[matches_.size()-1].first->TCID()<<" "<<tracklet->TCID()<<endl;
-      assert(matches_[matches_.size()-1].first->TCID()<tracklet->TCID());
-
+      if (matches_[matches_.size()-1].first->TCID()>=tracklet->TCID()){
+	cout << "Wrong TCID ordering in "<<getName()<<" : "
+	     <<matches_[matches_.size()-1].first->TCID()
+	     <<" "<<tracklet->TCID()
+	     <<" "<<matches_[matches_.size()-1].first->trackletIndex()
+	     <<" "<<tracklet->trackletIndex()<<endl;
+	//assert(0);
+      }
     }
     matches_.push_back(tmp);
   }

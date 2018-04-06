@@ -360,7 +360,7 @@ public:
     } 
 
 
-    ichisqfit_.set(-1,8,false);
+    ichisqfit_.set(-1,10,false);
 
   }
 
@@ -817,7 +817,7 @@ public:
 
     assert(abs(disk)>=1&&abs(disk)<=5);
 
-    diskresid_[abs(disk)-1].init(disk,ideltaphi,ideltar,stubid,dphi,dr,dphiapprox,drapprox,zstub,alpha,stubptrs.first->alpha(),stubptrs);
+    diskresid_[abs(disk)-1].init(disk,ideltaphi,ideltar,stubid,dphi,dr,dphiapprox,drapprox,zstub,alpha,stubptrs.first->alphanew(),stubptrs);
       
 
   }
@@ -1024,7 +1024,7 @@ public:
     //for(int i=0; i<16; i++)  stubIDs[i] = 63; //this is no stub code value
 
     // For future reference, *resid_[i] uses i as the absolute stub index. (0-5 for barrel, 0-4 for disk)
-    // On the other hand, proj*_[i] uses i almost like *resid_[i], except the seeding layer indices are removed entirely.
+    // On the other hand, proj*_[i] uses i almost like *resid_[i], except the *seeding* layer indices are removed entirely.
     // E.g. An L3L4 track has 0=L1, 1=L2, 2=L4, 3=L5 for the barrels (for proj*_[i])
 
     if(barrel_) {
@@ -1061,6 +1061,7 @@ public:
         }
 	
 	//check disks
+        if(i==4 && layerresid_[1].valid()) continue;
 	if(diskresid_[i].valid()) {
 	  if(innerStub_->disk() < 0) {
 	    stubIDs[-11-i] = diskresid_[i].fpgastubid().value();
@@ -1199,7 +1200,7 @@ public:
     }
 
     iz0fit_.set(iz0fit,11,false,__LINE__,__FILE__);
-    ichisqfit_.set(ichisqfit,5,true,__LINE__,__FILE__);
+    ichisqfit_.set(ichisqfit,10,true,__LINE__,__FILE__);
 
     fpgatrack_=new FPGATrack(makeTrack());
 
@@ -1473,7 +1474,8 @@ public:
 
   double phioffset() const {return phioffset_;}
 
-  void setTrackletIndex(int index) {trackletIndex_=index;}
+  void setTrackletIndex(int index) {trackletIndex_=index;
+    assert(index<64);}
 
   int trackletIndex() const {return trackletIndex_;}
 

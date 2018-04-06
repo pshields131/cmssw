@@ -79,66 +79,103 @@ public:
     // Set the sector for FPGATrack, enabling the ability to do adjacent sector removal
     for(unsigned int strk=0; strk<numTrk; strk++) {
       inputtracks_[strk]->setSector(iSector_);
-
     }
 
-    for(unsigned int itrk=0; itrk<numTrk-1; itrk++) { // numTrk-1 since last track has no other to compare to
+    // Grid removal
+    if(RemovalType=="grid") {
 
-      // If primary track is a duplicate, it cannot veto any...move on
-      if(inputtracks_[itrk]->duplicate()==1) continue;
+      // Sort tracks by ichisq so that removal will keep the lower ichisq track
+      std::sort(inputtracks_.begin(), inputtracks_.end(), [](const FPGATrack* lhs, const FPGATrack* rhs)
+          {return lhs->ichisq() < rhs->ichisq();}
+      );
+      bool grid[19][40] = {{false}};
 
-      int nStubP = 0;
-      int nStubS[500] = {0};
-      int nShare[500] = {0};
+      for(unsigned int itrk=0; itrk<numTrk-1; itrk++) { // numTrk-1 since last track has no other to compare to
 
-      // Get and count primary stubs
-      std::map<int, int> stubsTrk1 = inputtracks_[itrk]->stubID();
-      nStubP = stubsTrk1.size();
+        if(inputtracks_[itrk]->duplicate()) cout << "WARNING: Track already tagged as duplicate!!" << endl;
 
-      for(unsigned int jtrk=itrk+1; jtrk<numTrk; jtrk++) {
-        // Skip duplicate tracks
-        if(inputtracks_[jtrk]->duplicate()==1) continue;
+        double phiBin = (inputtracks_[itrk]->phi0()-2*3.14159/27*iSector_)/(2*M_PI/9/50) + 1;
+        phiBin = std::max(phiBin,0.);
+        phiBin = std::min(phiBin,18.);
 
-        // Get and count secondary stubs
-        std::map<int, int> stubsTrk2 = inputtracks_[jtrk]->stubID();
-        nStubS[jtrk] = stubsTrk2.size();
+        double ptBin = 1/inputtracks_[itrk]->pt()*40+20;
+        ptBin = std::max(ptBin,0.);
+        ptBin = std::min(ptBin,39.);
 
-        // Count shared stubs
-        for(std::map<int, int>::iterator  st=stubsTrk1.begin(); st!=stubsTrk1.end(); st++) {
-          if(stubsTrk2.find(st->first) != stubsTrk2.end()) {
-            if(st->second == stubsTrk2[st->first] && st->second != 63) nShare[jtrk]++;
-          }
-        }
-      }
+        if(grid[(int)phiBin][(int)ptBin]) inputtracks_[itrk]->setDuplicate(true);
+        grid[(int)phiBin][(int)ptBin] = true;
 
-      // Tag duplicates
-      for(unsigned int jtrk=itrk+1; jtrk<numTrk; jtrk++) {
-        // Skip duplicate tracks
-        if(inputtracks_[jtrk]->duplicate()==1) continue;
-
-        // Chi2 duplicate removal
-        if((nStubP-nShare[jtrk] < minIndStubs) || (nStubS[jtrk]-nShare[jtrk] < minIndStubs)) {
-
-          if((int)inputtracks_[itrk]->chisq() > (int)inputtracks_[jtrk]->chisq()) {
-            inputtracks_[itrk]->setDuplicate(true);
-          }
-          if((int)inputtracks_[itrk]->chisq() <= (int)inputtracks_[jtrk]->chisq()) {
-            inputtracks_[jtrk]->setDuplicate(true);
-          }
-
-        }
-
-        // nStub duplicate removal
-//        if((nStubP-nShare[jtrk] < minIndStubs) && (nStubP <  nStubS[jtrk])) {
-//          inputtracks_[itrk]->setDuplicate(true);
-//        }
-//        if((nStubS[jtrk]-nShare[jtrk] < minIndStubs) && (nStubS[jtrk] <= nStubP)) {
-//          inputtracks_[jtrk]->setDuplicate(true);
-//        }
+        double phiTest = inputtracks_[itrk]->phi0()-2*3.141159/27*iSector_;
+        if(phiTest < -3.14159/27) cout << "track phi too small!" << endl;
+        if(phiTest > 2*2*3.14159/27) cout << "track phi too big!" << endl;
 
       }
+    } // end grid removal
 
-    } //loop over primary track
+    // Removal by comparing pairs of tracks
+    if(RemovalType=="ichi" || RemovalType=="nstub") {
+      for(unsigned int itrk=0; itrk<numTrk-1; itrk++) { // numTrk-1 since last track has no other to compare to
+
+        // If primary track is a duplicate, it cannot veto any...move on
+        if(inputtracks_[itrk]->duplicate()==1) continue;
+
+        int nStubP = 0;
+        vector<int> nStubS(numTrk);
+        vector<int> nShare(numTrk);
+        // Get and count primary stubs
+        std::map<int, int> stubsTrk1 = inputtracks_[itrk]->stubID();
+        nStubP = stubsTrk1.size();
+
+        for(unsigned int jtrk=itrk+1; jtrk<numTrk; jtrk++) {
+          // Skip duplicate tracks
+          if(inputtracks_[jtrk]->duplicate()==1) continue;
+
+          // Get and count secondary stubs
+          std::map<int, int> stubsTrk2 = inputtracks_[jtrk]->stubID();
+          nStubS[jtrk] = stubsTrk2.size();
+
+          // Count shared stubs
+          for(std::map<int, int>::iterator  st=stubsTrk1.begin(); st!=stubsTrk1.end(); st++) {
+            if(stubsTrk2.find(st->first) != stubsTrk2.end()) {
+              if(st->second == stubsTrk2[st->first] && st->second != 63) nShare[jtrk]++;
+            }
+          }
+        }
+
+        // Tag duplicates
+        for(unsigned int jtrk=itrk+1; jtrk<numTrk; jtrk++) {
+          // Skip duplicate tracks
+          if(inputtracks_[jtrk]->duplicate()==1) continue;
+
+          // Chi2 duplicate removal
+          if(RemovalType=="ichi") {
+            if((nStubP-nShare[jtrk] < minIndStubs) || (nStubS[jtrk]-nShare[jtrk] < minIndStubs)) {
+
+              if((int)inputtracks_[itrk]->ichisq() > (int)inputtracks_[jtrk]->ichisq()) {
+                inputtracks_[itrk]->setDuplicate(true);
+              }
+              else if((int)inputtracks_[itrk]->ichisq() <= (int)inputtracks_[jtrk]->ichisq()) {
+                inputtracks_[jtrk]->setDuplicate(true);
+              }
+              else cout << "Error: Didn't tag either track in duplicate pair." << endl;
+
+            }
+          } // end ichi removal
+
+          // nStub duplicate removal
+          if(RemovalType=="nstub") {
+            if((nStubP-nShare[jtrk] < minIndStubs) && (nStubP <  nStubS[jtrk])) {
+              inputtracks_[itrk]->setDuplicate(true);
+            }
+            if((nStubS[jtrk]-nShare[jtrk] < minIndStubs) && (nStubS[jtrk] <= nStubP)) {
+              inputtracks_[jtrk]->setDuplicate(true);
+            }
+          } // end nstub removal
+
+        } // end tag duplicates
+
+      } // end loop over primary track
+    } // end track comparison removal
 
     //Add tracks to output
     for(unsigned int i=0;i<inputtracklets_.size();i++) {

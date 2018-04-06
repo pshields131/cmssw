@@ -40,7 +40,8 @@ void makeResidualIntervalPlot( TString type, TString dir, TString variable, TH1F
 // ----------------------------------------------------------------------------------------------------------------
 
 
-void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=0, int TP_select_eventid=0, float TP_minPt=2.0, float TP_maxPt=200.0, float TP_maxEta=2.4) {
+//void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=0, int TP_select_eventid=0, float TP_minPt=2.0, float TP_maxPt=200.0, float TP_maxEta=2.4) {
+void L1TrackNtuplePlot(TString type, TString treeName="", int TP_select_injet=0, int TP_select_pdgid=0, int TP_select_eventid=0, float TP_minPt=2.0, float TP_maxPt=100.0, float TP_maxEta=2.4) {
 
   // type:              this is the input file you want to process (minus ".root" extension)
   // TP_select_pdgid:   if non-zero, only select TPs with a given PDG ID
@@ -93,7 +94,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
 
   // ----------------------------------------------------------------------------------------------------------------
   // read ntuples
-  TChain* tree = new TChain("L1TrackNtuple/eventTree");
+  TChain* tree = new TChain("L1TrackNtuple"+treeName+"/eventTree");
   tree->Add(type+".root");
   
   if (tree->GetEntries() == 0) {
@@ -117,8 +118,8 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   vector<int>*   tp_nstub;
   //vector<int>*   tp_nstublayer;
   vector<int>*   tp_eventid;
-  //vector<int>*   tp_injet;
-  //vector<int>*   tp_injet_highpt;
+  vector<int>*   tp_injet;
+  vector<int>*   tp_injet_highpt;
   
   // *L1 track* properties, for tracking particles matched to a L1 track
   vector<float>* matchtrk_pt;
@@ -128,8 +129,8 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   vector<float>* matchtrk_z0;
   vector<float>* matchtrk_chi2;
   vector<int>*   matchtrk_nstub;
-  //vector<int>*   matchtrk_injet;
-  //vector<int>*   matchtrk_injet_highpt;
+  vector<int>*   matchtrk_injet;
+  vector<int>*   matchtrk_injet_highpt;
 
   // all L1 tracks
   vector<float>* trk_pt;
@@ -137,8 +138,8 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   vector<float>* trk_phi;
   vector<float>* trk_chi2;
   vector<int>*   trk_nstub;
-  //vector<int>*   trk_injet;
-  //vector<int>*   trk_injet_highpt;
+  vector<int>*   trk_injet;
+  vector<int>*   trk_injet_highpt;
 
   //vector<float>* jet_eta;
   //vector<float>* jet_pt;
@@ -158,8 +159,8 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   TBranch* b_tp_nstub;
   //TBranch* b_tp_nstublayer;
   TBranch* b_tp_eventid;
-  //TBranch* b_tp_injet;
-  //TBranch* b_tp_injet_highpt;
+  TBranch* b_tp_injet;
+  TBranch* b_tp_injet_highpt;
 
   TBranch* b_matchtrk_pt;
   TBranch* b_matchtrk_eta;
@@ -168,16 +169,16 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   TBranch* b_matchtrk_z0;
   TBranch* b_matchtrk_chi2; 
   TBranch* b_matchtrk_nstub;
-  //TBranch* b_matchtrk_injet;
-  //TBranch* b_matchtrk_injet_highpt;
+  TBranch* b_matchtrk_injet;
+  TBranch* b_matchtrk_injet_highpt;
 
   TBranch* b_trk_pt; 
   TBranch* b_trk_eta; 
   TBranch* b_trk_phi; 
   TBranch* b_trk_chi2; 
   TBranch* b_trk_nstub; 
-  //TBranch* b_trk_injet;
-  //TBranch* b_trk_injet_highpt;
+  TBranch* b_trk_injet;
+  TBranch* b_trk_injet_highpt;
 
   //TBranch* b_jet_eta;
   //TBranch* b_jet_pt;
@@ -196,8 +197,8 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   tp_nstub = 0;
   //tp_nstublayer = 0;
   tp_eventid = 0;
-  //tp_injet = 0;
-  //tp_injet_highpt = 0;
+  tp_injet = 0;
+  tp_injet_highpt = 0;
 
   matchtrk_pt  = 0;
   matchtrk_eta = 0;
@@ -206,16 +207,16 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   matchtrk_z0  = 0;
   matchtrk_chi2  = 0; 
   matchtrk_nstub = 0;
-  //matchtrk_injet = 0;
-  //matchtrk_injet_highpt = 0;
+  matchtrk_injet = 0;
+  matchtrk_injet_highpt = 0;
 
   trk_pt = 0; 
   trk_eta = 0; 
   trk_phi = 0; 
   trk_chi2 = 0; 
   trk_nstub = 0; 
-  //trk_injet = 0;
-  //trk_injet_highpt = 0;
+  trk_injet = 0;
+  trk_injet_highpt = 0;
 
   //jet_eta = 0;
   //jet_pt = 0;
@@ -236,13 +237,11 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   tree->SetBranchAddress("tp_nstub",      &tp_nstub,      &b_tp_nstub);
   //tree->SetBranchAddress("tp_nstublayer", &tp_nstublayer, &b_tp_nstublayer);
   tree->SetBranchAddress("tp_eventid",    &tp_eventid,    &b_tp_eventid);
-  /*
   if (TP_select_injet > 0) {
     tree->SetBranchAddress("tp_injet",   &tp_injet,   &b_tp_injet);
     tree->SetBranchAddress("tp_injet_highpt",   &tp_injet_highpt,   &b_tp_injet_highpt);
   }
-  */
-
+  
   if (doLooseMatch) {
     tree->SetBranchAddress("loosematchtrk_pt",    &matchtrk_pt,    &b_matchtrk_pt);
     tree->SetBranchAddress("loosematchtrk_eta",   &matchtrk_eta,   &b_matchtrk_eta);
@@ -251,12 +250,10 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     tree->SetBranchAddress("loosematchtrk_z0",    &matchtrk_z0,    &b_matchtrk_z0);
     tree->SetBranchAddress("loosematchtrk_chi2",  &matchtrk_chi2,  &b_matchtrk_chi2);
     tree->SetBranchAddress("loosematchtrk_nstub", &matchtrk_nstub, &b_matchtrk_nstub);
-    /*
     if (TP_select_injet > 0) {
       tree->SetBranchAddress("loosematchtrk_injet",   &matchtrk_injet,   &b_matchtrk_injet);
       tree->SetBranchAddress("loosematchtrk_injet_highpt",   &matchtrk_injet_highpt,   &b_matchtrk_injet_highpt);
     }
-    */
   }
   else {
     tree->SetBranchAddress("matchtrk_pt",    &matchtrk_pt,    &b_matchtrk_pt);
@@ -266,12 +263,10 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     tree->SetBranchAddress("matchtrk_z0",    &matchtrk_z0,    &b_matchtrk_z0);
     tree->SetBranchAddress("matchtrk_chi2",  &matchtrk_chi2,  &b_matchtrk_chi2);
     tree->SetBranchAddress("matchtrk_nstub", &matchtrk_nstub, &b_matchtrk_nstub);
-    /*
     if (TP_select_injet > 0) {
       tree->SetBranchAddress("matchtrk_injet",   &matchtrk_injet,   &b_matchtrk_injet);
       tree->SetBranchAddress("matchtrk_injet_highpt",   &matchtrk_injet_highpt,   &b_matchtrk_injet_highpt);
     }
-    */
   }
 
   tree->SetBranchAddress("trk_pt",   &trk_pt,   &b_trk_pt);
@@ -279,13 +274,11 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   tree->SetBranchAddress("trk_phi",  &trk_phi,  &b_trk_phi);
   tree->SetBranchAddress("trk_chi2", &trk_chi2, &b_trk_chi2);
   tree->SetBranchAddress("trk_nstub", &trk_nstub, &b_trk_nstub);
-  /*
   if (TP_select_injet > 0) {
     tree->SetBranchAddress("trk_injet",   &trk_injet,   &b_trk_injet);
     tree->SetBranchAddress("trk_injet_highpt",   &trk_injet_highpt,   &b_trk_injet_highpt);
   }
-  */
-
+  
   /*
   if (TP_select_injet > 0) {
     tree->SetBranchAddress("jet_eta", &jet_eta, &b_jet_eta);
@@ -324,6 +317,9 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   TH1F* h_tp_eta   = new TH1F("tp_eta",  ";Tracking particle #eta; Tracking particles / 0.1",             50, -2.5,   2.5);
   TH1F* h_tp_eta_L = new TH1F("tp_eta_L",";Tracking particle #eta; Tracking particles / 0.1",             50, -2.5,   2.5);
   TH1F* h_tp_eta_H = new TH1F("tp_eta_H",";Tracking particle #eta; Tracking particles / 0.1",             50, -2.5,   2.5);
+  TH1F* h_tp_eta_23   = new TH1F("tp_eta_23",  ";Tracking particle #eta; Tracking particles / 0.1",             50, -2.5,   2.5);
+  TH1F* h_tp_eta_35   = new TH1F("tp_eta_35",  ";Tracking particle #eta; Tracking particles / 0.1",             50, -2.5,   2.5);
+  TH1F* h_tp_eta_5   = new TH1F("tp_eta_5",  ";Tracking particle #eta; Tracking particles / 0.1",             50, -2.5,   2.5);
 
 
   TH1F* h_match_tp_pt    = new TH1F("match_tp_pt",   ";Tracking particle p_{T} [GeV]; Tracking particles / 1.0 GeV", 100,  0,   100.0);
@@ -333,7 +329,9 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   TH1F* h_match_tp_eta   = new TH1F("match_tp_eta",  ";Tracking particle #eta; Tracking particles / 0.1",             50, -2.5,   2.5);
   TH1F* h_match_tp_eta_L = new TH1F("match_tp_eta_L",";Tracking particle #eta; Tracking particles / 0.1",             50, -2.5,   2.5);
   TH1F* h_match_tp_eta_H = new TH1F("match_tp_eta_H",";Tracking particle #eta; Tracking particles / 0.1",             50, -2.5,   2.5);
-
+  TH1F* h_match_tp_eta_23   = new TH1F("match_tp_eta_23",  ";Tracking particle #eta; Tracking particles / 0.1",             50, -2.5,   2.5);
+  TH1F* h_match_tp_eta_35   = new TH1F("match_tp_eta_35",  ";Tracking particle #eta; Tracking particles / 0.1",             50, -2.5,   2.5);
+  TH1F* h_match_tp_eta_5   = new TH1F("match_tp_eta_5",  ";Tracking particle #eta; Tracking particles / 0.1",             50, -2.5,   2.5);
 
   // ----------------------------------------------------------------------------------------------------------------
   // resolution vs. pt histograms
@@ -360,6 +358,9 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   TString ptrange[nRANGE] = {"0-5","5-10", "10-15","15-20","20-25","25-30","30-35","35-40","40-45","45-50","50-55",
   			     "55-60","60-65","65-70","70-75","75-80","80-85","85-90","90-95","95-100"};
 
+  const int nRANGE_L = 12;
+  TString ptrange_L[nRANGE] = {"2-2.5", "2.5-3", "3-3.5", "3.5-4", "4-4.5", "4.5-5", "5-5.5", "5.5-6", "6-6.5", "6.5-7", "7-7.5", "7.5-8" };
+
   TH1F* h_absResVsPt_pt[nRANGE];
   TH1F* h_absResVsPt_ptRel[nRANGE];
   TH1F* h_absResVsPt_z0[nRANGE];
@@ -367,12 +368,12 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   TH1F* h_absResVsPt_eta[nRANGE];
   TH1F* h_absResVsPt_d0[nRANGE];
 
-  TH1F* h_absResVsPt_pt_L[nRANGE];
-  TH1F* h_absResVsPt_ptRel_L[nRANGE];
-  TH1F* h_absResVsPt_z0_L[nRANGE];
-  TH1F* h_absResVsPt_phi_L[nRANGE];
-  TH1F* h_absResVsPt_eta_L[nRANGE];
-  TH1F* h_absResVsPt_d0_L[nRANGE];
+  TH1F* h_absResVsPt_pt_L[nRANGE_L];
+  TH1F* h_absResVsPt_ptRel_L[nRANGE_L];
+  TH1F* h_absResVsPt_z0_L[nRANGE_L];
+  TH1F* h_absResVsPt_phi_L[nRANGE_L];
+  TH1F* h_absResVsPt_eta_L[nRANGE_L];
+  TH1F* h_absResVsPt_d0_L[nRANGE_L];
 
   for (int i=0; i<nRANGE; i++) {
     h_absResVsPt_pt[i]    = new TH1F("absResVsPt_pt_"+ptrange[i],   ";p_{T} residual (L1 - sim) [GeV]; L1 tracks / 0.1",   nBinsPtRes,    0, maxPtRes);
@@ -383,10 +384,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     h_absResVsPt_d0[i]    = new TH1F("absResVsPt_d0_"+ptrange[i],   ";d_{0}residual (L1 - sim) [GeV]; L1 tracks / 0.1",    100,           0, 0.02);
   }
 
-  const int nRANGE_L = 10;
-  TString ptrange_L[nRANGE] = {"3-3.5", "3.5-4", "4-4.5", "4.5-5", "5-5.5", "5.5-6", "6-6.5", "6.5-7", "7-7.5", "7.5-8" };
-
-  for (int i=0; i<nRANGE; i++) {
+  for (int i=0; i<nRANGE_L; i++) {
     h_absResVsPt_pt_L[i]    = new TH1F("absResVsPt_L_pt_"+ptrange_L[i],   ";p_{T} residual (L1 - sim) [GeV]; L1 tracks / 0.1",   nBinsPtRes,    0, maxPtRes);
     h_absResVsPt_ptRel_L[i] = new TH1F("absResVsPt_L_ptRel_"+ptrange_L[i],";p_{T} residual (L1 - sim) / p_{T}; L1 tracks / 0.02",nBinsPtRelRes, 0, maxPtRelRes);
     h_absResVsPt_z0_L[i]    = new TH1F("absResVsPt_L_z0_"+ptrange_L[i],   ";z_{0} residual (L1 - sim) [GeV]; L1 tracks / 0.1",   nBinsZ0Res,    0, maxZ0Res);
@@ -396,10 +394,17 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   }
 
   // resolution vs. eta histograms
+
   const int nETARANGE = 24;
   TString etarange[nETARANGE] = {"0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9","1.0",
 				 "1.1","1.2","1.3","1.4","1.5","1.6","1.7","1.8","1.9","2.0",
 				 "2.1","2.2","2.3","2.4"};
+  /*
+  const int nETARANGE = 12;
+  TString etarange[nETARANGE] = {"0.2","0.4","0.6","0.8","1.0",
+				 "1.2","1.4","1.6","1.8","2.0",
+				 "2.2","2.4"};
+  */
 
   TH1F* h_absResVsEta_eta[nETARANGE];
   TH1F* h_absResVsEta_z0[nETARANGE];
@@ -480,10 +485,12 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   // ----------------------------------------------------------------------------------------------------------------
 
   TH1F* h_tp_phi   = new TH1F("tp_phi",  ";Tracking particle #phi [rad]; Tracking particles / 0.1",       64, -3.2,   3.2);
-  TH1F* h_tp_d0    = new TH1F("tp_d0",   ";Tracking particle d_{0} [cm]; Tracking particles / 0.0004 cm",100, -0.02, 0.02);
+  TH1F* h_tp_d0    = new TH1F("tp_d0",   ";Tracking particle d_{0} [cm]; Tracking particles / 0.01 cm",50, -0.25, 0.25);
+  TH1F* h_tp_absd0 = new TH1F("tp_absd0",";Tracking particle |d_{0}| [cm]; Tracking particles / 0.04 cm",50, 0, 2.0);
 
   TH1F* h_match_tp_phi   = new TH1F("match_tp_phi",  ";Tracking particle #phi [rad]; Tracking particles / 0.1",       64, -3.2,   3.2);
-  TH1F* h_match_tp_d0    = new TH1F("match_tp_d0",   ";Tracking particle d_{0} [cm]; Tracking particles / 0.0004 cm",100, -0.02,   0.02);
+  TH1F* h_match_tp_d0    = new TH1F("match_tp_d0",   ";Tracking particle d_{0} [cm]; Tracking particles / 0.01 cm",50, -0.25, 0.25);
+  TH1F* h_match_tp_absd0 = new TH1F("match_tp_absd0",";Tracking particle d_{0} [cm]; Tracking particles / 0.04 cm",50, 0, 2.0);
 
   TH1F* h_match_trk_nstub   = new TH1F("match_trk_nstub",   ";Number of stubs; L1 tracks / 1.0", 15, 0, 15);
   TH1F* h_match_trk_nstub_C = new TH1F("match_trk_nstub_C", ";Number of stubs; L1 tracks / 1.0", 15, 0, 15);
@@ -670,6 +677,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   // ----------------------------------------------------------------------------------------------------------------
   // number of tracks per event 
 
+  TH1F* h_ntrk_pt2  = new TH1F("ntrk_pt2", ";# tracks (p_{T} > 2 GeV) / event; Events", 400, 0, 400.0);
   TH1F* h_ntrk_pt3  = new TH1F("ntrk_pt3", ";# tracks (p_{T} > 3 GeV) / event; Events", 300, 0, 300.0);
   TH1F* h_ntrk_pt10 = new TH1F("ntrk_pt10", ";# tracks (p_{T} > 10 GeV) / event; Events", 100, 0, 100.0);
 
@@ -717,21 +725,21 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     // ----------------------------------------------------------------------------------------------------------------
     // track loop for total rates
 
+    int ntrkevt_pt2 = 0;
     int ntrkevt_pt3 = 0;
     int ntrkevt_pt10 = 0;
 
     for (int it=0; it<(int)trk_pt->size(); it++) {
 
-      /*           
       // only look at tracks in (ttbar) jets ?
       if (TP_select_injet > 0) {
 	if (TP_select_injet == 1 && trk_injet->at(it) == 0) continue;       
 	if (TP_select_injet == 2 && trk_injet_highpt->at(it) == 0) continue;       
       }
-      */
 
       if (trk_pt->at(it) > 2.0 && fabs(trk_eta->at(it))<2.5) {
 	ntrk_pt2++;
+	ntrkevt_pt2++;
       }
       if (trk_pt->at(it) > 3.0 && fabs(trk_eta->at(it))<2.5) {
 	ntrk_pt3++;
@@ -748,6 +756,8 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       }
     }
 
+
+    h_ntrk_pt2->Fill(ntrkevt_pt2);
     h_ntrk_pt3->Fill(ntrkevt_pt3);
     h_ntrk_pt10->Fill(ntrkevt_pt10);
 
@@ -756,18 +766,16 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     // tracking particle loop
     for (int it=0; it<(int)tp_pt->size(); it++) {
 
-      /*
       // only look at TPs in (ttbar) jets ?
       if (TP_select_injet > 0) {
 	if (TP_select_injet == 1 && tp_injet->at(it) == 0) continue;       
 	if (TP_select_injet == 2 && tp_injet_highpt->at(it) == 0) continue;       
       }
-      */
       
       // total track rates
       //if (tp_nstub->at(it) >= 4 && tp_nstublayer->at(it) >= 4 && fabs(tp_dxy->at(it)) < 1 && fabs(tp_eta->at(it)) < TP_maxEta) {
       if (fabs(tp_dxy->at(it)) < 1 && fabs(tp_eta->at(it)) < TP_maxEta) { //the stub requirements are applied when making the ntuples
-	if (tp_pt->at(it) > 2.0) {
+      	if (tp_pt->at(it) > 2.0) {
 	  ntp_pt2++;
 	}
 	if (tp_pt->at(it) > 3.0) {
@@ -806,15 +814,20 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
 	h_tp_phi->Fill(tp_phi->at(it));
 	h_tp_z0->Fill(tp_z0->at(it));
 	h_tp_d0->Fill(tp_d0->at(it));
+	h_tp_absd0->Fill(fabs(tp_d0->at(it)));
 	
+	if (tp_pt->at(it) < 3.0) h_tp_eta_23->Fill(tp_eta->at(it));
+	else if (tp_pt->at(it) < 5.0) h_tp_eta_35->Fill(tp_eta->at(it));
+	else h_tp_eta_5->Fill(tp_eta->at(it));
+
 	if (tp_pt->at(it) < 8.0) {
-    h_tp_eta_L->Fill(tp_eta->at(it));
-    h_tp_z0_L->Fill(tp_z0->at(it));
-  }
+	  h_tp_eta_L->Fill(tp_eta->at(it));
+	  h_tp_z0_L->Fill(tp_z0->at(it));
+	}
 	else {
-    h_tp_eta_H->Fill(tp_eta->at(it));
-    h_tp_z0_H->Fill(tp_z0->at(it));
-  }
+	  h_tp_eta_H->Fill(tp_eta->at(it));
+	  h_tp_z0_H->Fill(tp_z0->at(it));
+	}
 	
       }
       
@@ -909,19 +922,24 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
 	h_match_tp_phi->Fill(tp_phi->at(it));
 	h_match_tp_z0->Fill(tp_z0->at(it));
 	h_match_tp_d0->Fill(tp_d0->at(it));
+	h_match_tp_absd0->Fill(fabs(tp_d0->at(it)));
 	
 	if (fabs(tp_eta->at(it)) < 1.0) n_match_eta1p0++;
 	else if (fabs(tp_eta->at(it)) < 1.75) n_match_eta1p75++;
 	else n_match_eta2p5++;
 	
+	if (tp_pt->at(it) < 3.0) h_match_tp_eta_23->Fill(tp_eta->at(it));
+	else if (tp_pt->at(it) < 5.0) h_match_tp_eta_35->Fill(tp_eta->at(it));
+	else h_match_tp_eta_5->Fill(tp_eta->at(it));
+
 	if (tp_pt->at(it) < 8.0) {
-    h_match_tp_eta_L->Fill(tp_eta->at(it));
-    h_match_tp_z0_L->Fill(tp_z0->at(it));
-  }
+	  h_match_tp_eta_L->Fill(tp_eta->at(it));
+	  h_match_tp_z0_L->Fill(tp_z0->at(it));
+	}
 	else {
-    h_match_tp_z0_H->Fill(tp_z0->at(it));
-    h_match_tp_eta_H->Fill(tp_eta->at(it));
-  }
+	  h_match_tp_z0_H->Fill(tp_z0->at(it));
+	  h_match_tp_eta_H->Fill(tp_eta->at(it));
+	}
       }
       
       
@@ -935,7 +953,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       else if (fabs(tp_eta->at(it)) < 1.6 && fabs(tp_eta->at(it)) >= 0.8) h_match_trk_nstub_I->Fill(matchtrk_nstub->at(it));
       else if (fabs(tp_eta->at(it)) >= 1.6) h_match_trk_nstub_F->Fill(matchtrk_nstub->at(it));
       
-      
+
       // ----------------------------------------------------------------------------------------------------------------
       // fill resolution histograms
       
@@ -948,7 +966,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       
       if (fabs(tp_eta->at(it)) < 0.8) h_res_z0_C->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
       else if (fabs(tp_eta->at(it)) < 1.6 && fabs(tp_eta->at(it)) >= 0.8) h_res_z0_I->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
-      else if (fabs(tp_eta->at(it)) >= 1.6) h_res_z0_F->Fill(tp_z0->at(it) - tp_z0->at(it));
+      else if (fabs(tp_eta->at(it)) >= 1.6) h_res_z0_F->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
       
       
       if (tp_pt->at(it) < 8.0) {
@@ -981,7 +999,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
 	
       }
       
-      
+
       // ----------------------------------------------------------------------------------------------------------------
       // fill resolution vs. pt histograms    
       for (int im=0; im<nRANGE; im++) {
@@ -1024,21 +1042,22 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
 	  
 	}
       }
-      
-      for (int im=6; im<nRANGE_L+6; im++) {
+
+      for (int im=4; im<nRANGE_L+4; im++) {
 	if ( (tp_pt->at(it) > (float)im*0.5 ) && (tp_pt->at(it) <= (float)im*0.5+0.5) ) {
-	  h_absResVsPt_pt_L[im-6]   ->Fill( fabs( matchtrk_pt->at(it)  - tp_pt->at(it) ));
-	  h_absResVsPt_ptRel_L[im-6]->Fill( fabs( (matchtrk_pt->at(it) - tp_pt->at(it)) )/tp_pt->at(it) );
-	  h_absResVsPt_z0_L[im-6]   ->Fill( fabs( matchtrk_z0->at(it)  - tp_z0->at(it) ) );
-	  h_absResVsPt_phi_L[im-6]  ->Fill( fabs( matchtrk_phi->at(it) - tp_phi->at(it) ) );
-	  h_absResVsPt_eta_L[im-6]  ->Fill( fabs( matchtrk_eta->at(it) - tp_eta->at(it) ) );
+	  h_absResVsPt_pt_L[im-4]   ->Fill( fabs( matchtrk_pt->at(it)  - tp_pt->at(it) ));
+	  h_absResVsPt_ptRel_L[im-4]->Fill( fabs( (matchtrk_pt->at(it) - tp_pt->at(it)) )/tp_pt->at(it) );
+	  h_absResVsPt_z0_L[im-4]   ->Fill( fabs( matchtrk_z0->at(it)  - tp_z0->at(it) ) );
+	  h_absResVsPt_phi_L[im-4]  ->Fill( fabs( matchtrk_phi->at(it) - tp_phi->at(it) ) );
+	  h_absResVsPt_eta_L[im-4]  ->Fill( fabs( matchtrk_eta->at(it) - tp_eta->at(it) ) );
 	}
       }
-      
+
       // ----------------------------------------------------------------------------------------------------------------
       // fill resolution vs. eta histograms
       for (int im=0; im<nETARANGE; im++) {
-       if ( (fabs(tp_eta->at(it)) > (float)im*0.1) && (fabs(tp_eta->at(it)) < (float)im*0.1+0.1) ) {
+	if ( (fabs(tp_eta->at(it)) > (float)im*0.1) && (fabs(tp_eta->at(it)) < (float)im*0.1+0.1) ) {
+	//if ( (fabs(tp_eta->at(it)) > (float)im*0.2) && (fabs(tp_eta->at(it)) < (float)im*0.2+0.2) ) {
 	 h_resVsEta_ptRel[im]->Fill((matchtrk_pt->at(it) - tp_pt->at(it))/tp_pt->at(it));
 	 h_resVsEta_eta[im]  ->Fill(matchtrk_eta->at(it) - tp_eta->at(it));
 	 h_resVsEta_phi[im]  ->Fill(matchtrk_phi->at(it) - tp_phi->at(it));
@@ -1110,10 +1129,10 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   // 2D plots  
   // ----------------------------------------------------------------------------------------------------------------
 
-  TH1F* h2_resVsPt_pt   = new TH1F("resVsPt2_pt",   ";Tracking particle p_{T} [GeV]; p_{T} resolution", 20,0,100);
-  TH1F* h2_resVsPt_pt_C = new TH1F("resVsPt2_pt_C", ";Tracking particle p_{T} [GeV]; p_{T} resolution", 20,0,100);
-  TH1F* h2_resVsPt_pt_I = new TH1F("resVsPt2_pt_I", ";Tracking particle p_{T} [GeV]; p_{T} resolution", 20,0,100);
-  TH1F* h2_resVsPt_pt_F = new TH1F("resVsPt2_pt_F", ";Tracking particle p_{T} [GeV]; p_{T} resolution", 20,0,100);
+  TH1F* h2_resVsPt_pt   = new TH1F("resVsPt2_pt",   ";Tracking particle p_{T} [GeV]; p_{T} resolution [GeV]", 20,0,100);
+  TH1F* h2_resVsPt_pt_C = new TH1F("resVsPt2_pt_C", ";Tracking particle p_{T} [GeV]; p_{T} resolution [GeV]", 20,0,100);
+  TH1F* h2_resVsPt_pt_I = new TH1F("resVsPt2_pt_I", ";Tracking particle p_{T} [GeV]; p_{T} resolution [GeV]", 20,0,100);
+  TH1F* h2_resVsPt_pt_F = new TH1F("resVsPt2_pt_F", ";Tracking particle p_{T} [GeV]; p_{T} resolution [GeV]", 20,0,100);
 
   TH1F* h2_resVsPt_ptRel = new TH1F("resVsPt2_ptRel",     ";Tracking particle p_{T} [GeV]; p_{T} resolution / p_{T}", 20,0,100);
   TH1F* h2_resVsPt_ptRel_C = new TH1F("resVsPt2_ptRel_C", ";Tracking particle p_{T} [GeV]; p_{T} resolution / p_{T}", 20,0,100);
@@ -1139,47 +1158,47 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
 
   TH1F* h2_resVsPt_d0 = new TH1F("resVsPt2_d0",   ";Tracking particle p_{T} [GeV]; d_{0} resolution [cm]", 20,0,100);
 
-  TH1F* h2_resVsPt_pt_68    = new TH1F("resVsPt2_pt_68",   ";Tracking particle p_{T} [GeV]; p_{T} resolution",         20,0,100);
+  TH1F* h2_resVsPt_pt_68    = new TH1F("resVsPt2_pt_68",   ";Tracking particle p_{T} [GeV]; p_{T} resolution [GeV]",         20,0,100);
   TH1F* h2_resVsPt_ptRel_68 = new TH1F("resVsPt2_ptRel_68",";Tracking particle p_{T} [GeV]; p_{T} resolution / p_{T}", 20,0,100);
   TH1F* h2_resVsPt_z0_68    = new TH1F("resVsPt2_z0_68",   ";Tracking particle p_{T} [GeV]; z_{0} resolution [cm]",    20,0,100);
   TH1F* h2_resVsPt_phi_68   = new TH1F("resVsPt2_phi_68",  ";Tracking particle p_{T} [GeV]; #phi resolution [rad]",    20,0,100);
-  TH1F* h2_resVsPt_eta_68   = new TH1F("resVsPt2_eta_68",  ";Tracking particle p_{T} [GeV]; #eta resolution [rad]",    20,0,100);
-  TH1F* h2_resVsPt_d0_68    = new TH1F("resVsPt2_d0_68",   ";Tracking particle p_{T} [GeV]; d_{0} resolution [rad]",   20,0,100);
+  TH1F* h2_resVsPt_eta_68   = new TH1F("resVsPt2_eta_68",  ";Tracking particle p_{T} [GeV]; #eta resolution",    20,0,100);
+  TH1F* h2_resVsPt_d0_68    = new TH1F("resVsPt2_d0_68",   ";Tracking particle p_{T} [GeV]; d_{0} resolution [cm]",   20,0,100);
 
-  TH1F* h2_resVsPt_pt_90    = new TH1F("resVsPt2_pt_90",   ";Tracking particle p_{T} [GeV]; p_{T} resolution",         20,0,100);
+  TH1F* h2_resVsPt_pt_90    = new TH1F("resVsPt2_pt_90",   ";Tracking particle p_{T} [GeV]; p_{T} resolution [GeV]",         20,0,100);
   TH1F* h2_resVsPt_ptRel_90 = new TH1F("resVsPt2_ptRel_90",";Tracking particle p_{T} [GeV]; p_{T} resolution / p_{T}", 20,0,100);
   TH1F* h2_resVsPt_z0_90    = new TH1F("resVsPt2_z0_90",   ";Tracking particle p_{T} [GeV]; z_{0} resolution [cm]",    20,0,100);
   TH1F* h2_resVsPt_phi_90   = new TH1F("resVsPt2_phi_90",  ";Tracking particle p_{T} [GeV]; #phi resolution [rad]",    20,0,100);
-  TH1F* h2_resVsPt_eta_90   = new TH1F("resVsPt2_eta_90",  ";Tracking particle p_{T} [GeV]; #eta resolution [rad]",    20,0,100);
-  TH1F* h2_resVsPt_d0_90    = new TH1F("resVsPt2_d0_90",   ";Tracking particle p_{T} [GeV]; d_{0} resolution [rad]",   20,0,100);
+  TH1F* h2_resVsPt_eta_90   = new TH1F("resVsPt2_eta_90",  ";Tracking particle p_{T} [GeV]; #eta resolution",    20,0,100);
+  TH1F* h2_resVsPt_d0_90    = new TH1F("resVsPt2_d0_90",   ";Tracking particle p_{T} [GeV]; d_{0} resolution [cm]",   20,0,100);
 
-  TH1F* h2_resVsPt_pt_99    = new TH1F("resVsPt2_pt_99",   ";Tracking particle p_{T} [GeV]; p_{T} resolution",         20,0,100);
+  TH1F* h2_resVsPt_pt_99    = new TH1F("resVsPt2_pt_99",   ";Tracking particle p_{T} [GeV]; p_{T} resolution [GeV]",         20,0,100);
   TH1F* h2_resVsPt_ptRel_99 = new TH1F("resVsPt2_ptRel_99",";Tracking particle p_{T} [GeV]; p_{T} resolution / p_{T}", 20,0,100);
   TH1F* h2_resVsPt_z0_99    = new TH1F("resVsPt2_z0_99",   ";Tracking particle p_{T} [GeV]; z_{0} resolution [cm]",    20,0,100);
   TH1F* h2_resVsPt_phi_99   = new TH1F("resVsPt2_phi_99",  ";Tracking particle p_{T} [GeV]; #phi resolution [rad]",    20,0,100);
-  TH1F* h2_resVsPt_eta_99   = new TH1F("resVsPt2_eta_99",  ";Tracking particle p_{T} [GeV]; #eta resolution [rad]",    20,0,100);
-  TH1F* h2_resVsPt_d0_99    = new TH1F("resVsPt2_d0_99",   ";Tracking particle p_{T} [GeV]; d_{0} resolution [rad]",   20,0,100);
+  TH1F* h2_resVsPt_eta_99   = new TH1F("resVsPt2_eta_99",  ";Tracking particle p_{T} [GeV]; #eta resolution",    20,0,100);
+  TH1F* h2_resVsPt_d0_99    = new TH1F("resVsPt2_d0_99",   ";Tracking particle p_{T} [GeV]; d_{0} resolution [cm]",   20,0,100);
 
-  TH1F* h2_resVsPt_pt_L_68    = new TH1F("resVsPt2_pt_L_68",   ";Tracking particle p_{T} [GeV]; p_{T} resolution",         10,3,8);
-  TH1F* h2_resVsPt_ptRel_L_68 = new TH1F("resVsPt2_ptRel_L_68",";Tracking particle p_{T} [GeV]; p_{T} resolution / p_{T}", 10,3,8);
-  TH1F* h2_resVsPt_z0_L_68    = new TH1F("resVsPt2_z0_L_68",   ";Tracking particle p_{T} [GeV]; z_{0} resolution [cm]",    10,3,8);
-  TH1F* h2_resVsPt_phi_L_68   = new TH1F("resVsPt2_phi_L_68",  ";Tracking particle p_{T} [GeV]; #phi resolution [rad]",    10,3,8);
-  TH1F* h2_resVsPt_eta_L_68   = new TH1F("resVsPt2_eta_L_68",  ";Tracking particle p_{T} [GeV]; #eta resolution [rad]",    10,3,8);
-  TH1F* h2_resVsPt_d0_L_68    = new TH1F("resVsPt2_d0_L_68",   ";Tracking particle p_{T} [GeV]; d_{0} resolution [rad]",   10,3,8);
+  TH1F* h2_resVsPt_pt_L_68    = new TH1F("resVsPt2_pt_L_68",   ";Tracking particle p_{T} [GeV]; p_{T} resolution [GeV]",   nRANGE_L,2,8);
+  TH1F* h2_resVsPt_ptRel_L_68 = new TH1F("resVsPt2_ptRel_L_68",";Tracking particle p_{T} [GeV]; p_{T} resolution / p_{T}", nRANGE_L,2,8);
+  TH1F* h2_resVsPt_z0_L_68    = new TH1F("resVsPt2_z0_L_68",   ";Tracking particle p_{T} [GeV]; z_{0} resolution [cm]",    nRANGE_L,2,8);
+  TH1F* h2_resVsPt_phi_L_68   = new TH1F("resVsPt2_phi_L_68",  ";Tracking particle p_{T} [GeV]; #phi resolution [rad]",    nRANGE_L,2,8);
+  TH1F* h2_resVsPt_eta_L_68   = new TH1F("resVsPt2_eta_L_68",  ";Tracking particle p_{T} [GeV]; #eta resolution",          nRANGE_L,2,8);
+  TH1F* h2_resVsPt_d0_L_68    = new TH1F("resVsPt2_d0_L_68",   ";Tracking particle p_{T} [GeV]; d_{0} resolution [cm]",    nRANGE_L,2,8);
 
-  TH1F* h2_resVsPt_pt_L_90    = new TH1F("resVsPt2_pt_L_90",   ";Tracking particle p_{T} [GeV]; p_{T} resolution",         10,3,8);
-  TH1F* h2_resVsPt_ptRel_L_90 = new TH1F("resVsPt2_ptRel_L_90",";Tracking particle p_{T} [GeV]; p_{T} resolution / p_{T}", 10,3,8);
-  TH1F* h2_resVsPt_z0_L_90    = new TH1F("resVsPt2_z0_L_90",   ";Tracking particle p_{T} [GeV]; z_{0} resolution [cm]",    10,3,8);
-  TH1F* h2_resVsPt_phi_L_90   = new TH1F("resVsPt2_phi_L_90",  ";Tracking particle p_{T} [GeV]; #phi resolution [rad]",    10,3,8);
-  TH1F* h2_resVsPt_eta_L_90   = new TH1F("resVsPt2_eta_L_90",  ";Tracking particle p_{T} [GeV]; #eta resolution [rad]",    10,3,8);
-  TH1F* h2_resVsPt_d0_L_90    = new TH1F("resVsPt2_d0_L_90",   ";Tracking particle p_{T} [GeV]; d_{0} resolution [rad]",   10,3,8);
+  TH1F* h2_resVsPt_pt_L_90    = new TH1F("resVsPt2_pt_L_90",   ";Tracking particle p_{T} [GeV]; p_{T} resolution [GeV]",   nRANGE_L,2,8);
+  TH1F* h2_resVsPt_ptRel_L_90 = new TH1F("resVsPt2_ptRel_L_90",";Tracking particle p_{T} [GeV]; p_{T} resolution / p_{T}", nRANGE_L,2,8);
+  TH1F* h2_resVsPt_z0_L_90    = new TH1F("resVsPt2_z0_L_90",   ";Tracking particle p_{T} [GeV]; z_{0} resolution [cm]",    nRANGE_L,2,8);
+  TH1F* h2_resVsPt_phi_L_90   = new TH1F("resVsPt2_phi_L_90",  ";Tracking particle p_{T} [GeV]; #phi resolution [rad]",    nRANGE_L,2,8);
+  TH1F* h2_resVsPt_eta_L_90   = new TH1F("resVsPt2_eta_L_90",  ";Tracking particle p_{T} [GeV]; #eta resolution",          nRANGE_L,2,8);
+  TH1F* h2_resVsPt_d0_L_90    = new TH1F("resVsPt2_d0_L_90",   ";Tracking particle p_{T} [GeV]; d_{0} resolution [cm]",    nRANGE_L,2,8);
 
-  TH1F* h2_resVsPt_pt_L_99    = new TH1F("resVsPt2_pt_L_99",   ";Tracking particle p_{T} [GeV]; p_{T} resolution",         10,3,8);
-  TH1F* h2_resVsPt_ptRel_L_99 = new TH1F("resVsPt2_ptRel_L_99",";Tracking particle p_{T} [GeV]; p_{T} resolution / p_{T}", 10,3,8);
-  TH1F* h2_resVsPt_z0_L_99    = new TH1F("resVsPt2_z0_L_99",   ";Tracking particle p_{T} [GeV]; z_{0} resolution [cm]",    10,3,8);
-  TH1F* h2_resVsPt_phi_L_99   = new TH1F("resVsPt2_phi_L_99",  ";Tracking particle p_{T} [GeV]; #phi resolution [rad]",    10,3,8);
-  TH1F* h2_resVsPt_eta_L_99   = new TH1F("resVsPt2_eta_L_99",  ";Tracking particle p_{T} [GeV]; #eta resolution [rad]",    10,3,8);
-  TH1F* h2_resVsPt_d0_L_99    = new TH1F("resVsPt2_d0_L_99",   ";Tracking particle p_{T} [GeV]; d_{0} resolution [rad]",   10,3,8);
+  TH1F* h2_resVsPt_pt_L_99    = new TH1F("resVsPt2_pt_L_99",   ";Tracking particle p_{T} [GeV]; p_{T} resolution [cm]",    nRANGE_L,2,8);
+  TH1F* h2_resVsPt_ptRel_L_99 = new TH1F("resVsPt2_ptRel_L_99",";Tracking particle p_{T} [GeV]; p_{T} resolution / p_{T}", nRANGE_L,2,8);
+  TH1F* h2_resVsPt_z0_L_99    = new TH1F("resVsPt2_z0_L_99",   ";Tracking particle p_{T} [GeV]; z_{0} resolution [cm]",    nRANGE_L,2,8);
+  TH1F* h2_resVsPt_phi_L_99   = new TH1F("resVsPt2_phi_L_99",  ";Tracking particle p_{T} [GeV]; #phi resolution [rad]",    nRANGE_L,2,8);
+  TH1F* h2_resVsPt_eta_L_99   = new TH1F("resVsPt2_eta_L_99",  ";Tracking particle p_{T} [GeV]; #eta resolution",          nRANGE_L,2,8);
+  TH1F* h2_resVsPt_d0_L_99    = new TH1F("resVsPt2_d0_L_99",   ";Tracking particle p_{T} [GeV]; d_{0} resolution [cm]",    nRANGE_L,2,8);
 
   for (int i=0; i<nRANGE; i++) {
     // set bin content and error
@@ -1286,101 +1305,101 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   }
 
   // resolution vs. eta histograms
-  TH1F* h2_resVsEta_eta   = new TH1F("resVsEta2_eta",   ";Tracking particle |#eta|; #eta resolution", 24,0,2.4);
-  TH1F* h2_resVsEta_eta_L = new TH1F("resVsEta2_eta_L", ";Tracking particle |#eta|; #eta resolution", 24,0,2.4);
-  TH1F* h2_resVsEta_eta_H = new TH1F("resVsEta2_eta_H", ";Tracking particle |#eta|; #eta resolution", 24,0,2.4);
+  TH1F* h2_resVsEta_eta   = new TH1F("resVsEta2_eta",   ";Tracking particle |#eta|; #eta resolution", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_eta_L = new TH1F("resVsEta2_eta_L", ";Tracking particle |#eta|; #eta resolution", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_eta_H = new TH1F("resVsEta2_eta_H", ";Tracking particle |#eta|; #eta resolution", nETARANGE,0,2.4);
 
-  TH1F* h2_mresVsEta_eta   = new TH1F("mresVsEta2_eta",   ";Tracking particle |#eta|; Mean(#eta residual)", 24,0,2.4);
-  TH1F* h2_mresVsEta_eta_L = new TH1F("mresVsEta2_eta_L", ";Tracking particle |#eta|; Mean(#eta residual)", 24,0,2.4);
-  TH1F* h2_mresVsEta_eta_H = new TH1F("mresVsEta2_eta_H", ";Tracking particle |#eta|; Mean(#eta residual)", 24,0,2.4);
+  TH1F* h2_mresVsEta_eta   = new TH1F("mresVsEta2_eta",   ";Tracking particle |#eta|; Mean(#eta residual)", nETARANGE,0,2.4);
+  TH1F* h2_mresVsEta_eta_L = new TH1F("mresVsEta2_eta_L", ";Tracking particle |#eta|; Mean(#eta residual)", nETARANGE,0,2.4);
+  TH1F* h2_mresVsEta_eta_H = new TH1F("mresVsEta2_eta_H", ";Tracking particle |#eta|; Mean(#eta residual)", nETARANGE,0,2.4);
 
-  TH1F* h2_resVsEta_z0   = new TH1F("resVsEta_z0",   ";Tracking particle |#eta|; z_{0} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_z0_L = new TH1F("resVsEta_z0_L", ";Tracking particle |#eta|; z_{0} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_z0_H = new TH1F("resVsEta_z0_H", ";Tracking particle |#eta|; z_{0} resolution [cm]", 24,0,2.4);
+  TH1F* h2_resVsEta_z0   = new TH1F("resVsEta_z0",   ";Tracking particle |#eta|; z_{0} resolution [cm]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_z0_L = new TH1F("resVsEta_z0_L", ";Tracking particle |#eta|; z_{0} resolution [cm]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_z0_H = new TH1F("resVsEta_z0_H", ";Tracking particle |#eta|; z_{0} resolution [cm]", nETARANGE,0,2.4);
 
-  TH1F* h2_resVsEta_phi   = new TH1F("resVsEta_phi",   ";Tracking particle |#eta|; #phi resolution [rad]", 24,0,2.4);
-  TH1F* h2_resVsEta_phi_L = new TH1F("resVsEta_phi_L", ";Tracking particle |#eta|; #phi resolution [rad]", 24,0,2.4);
-  TH1F* h2_resVsEta_phi_H = new TH1F("resVsEta_phi_H", ";Tracking particle |#eta|; #phi resolution [rad]", 24,0,2.4);
+  TH1F* h2_resVsEta_phi   = new TH1F("resVsEta_phi",   ";Tracking particle |#eta|; #phi resolution [rad]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_phi_L = new TH1F("resVsEta_phi_L", ";Tracking particle |#eta|; #phi resolution [rad]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_phi_H = new TH1F("resVsEta_phi_H", ";Tracking particle |#eta|; #phi resolution [rad]", nETARANGE,0,2.4);
 
-  TH1F* h2_resVsEta_ptRel   = new TH1F("resVsEta_ptRel", ";Tracking particle |#eta|; p_{T} resolution / p_{T}", 24,0,2.4);
-  TH1F* h2_resVsEta_ptRel_L = new TH1F("resVsEta_ptRel_L", ";Tracking particle |#eta|; p_{T} resolution / p_{T}", 24,0,2.4);
-  TH1F* h2_resVsEta_ptRel_H = new TH1F("resVsEta_ptRel_H", ";Tracking particle |#eta|; p_{T} resolution / p_{T}", 24,0,2.4);
+  TH1F* h2_resVsEta_ptRel   = new TH1F("resVsEta_ptRel", ";Tracking particle |#eta|; p_{T} resolution / p_{T}", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_ptRel_L = new TH1F("resVsEta_ptRel_L", ";Tracking particle |#eta|; p_{T} resolution / p_{T}", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_ptRel_H = new TH1F("resVsEta_ptRel_H", ";Tracking particle |#eta|; p_{T} resolution / p_{T}", nETARANGE,0,2.4);
 
-  TH1F* h2_resVsEta_d0  = new TH1F("resVsEta2_d0",  ";Tracking particle |#eta|; d_{0} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_d0_L  = new TH1F("resVsEta2_d0_L",  ";Tracking particle |#eta|; d_{0} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_d0_H  = new TH1F("resVsEta2_d0_H",  ";Tracking particle |#eta|; d_{0} resolution [cm]", 24,0,2.4);
+  TH1F* h2_resVsEta_d0  = new TH1F("resVsEta2_d0",  ";Tracking particle |#eta|; d_{0} resolution [cm]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_d0_L  = new TH1F("resVsEta2_d0_L",  ";Tracking particle |#eta|; d_{0} resolution [cm]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_d0_H  = new TH1F("resVsEta2_d0_H",  ";Tracking particle |#eta|; d_{0} resolution [cm]", nETARANGE,0,2.4);
 
 
-  TH1F* h2_resVsEta_eta_68  = new TH1F("resVsEta_eta_68",   ";Tracking particle |#eta|; #eta resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_eta_90   = new TH1F("resVsEta_eta_90",   ";Tracking particle |#eta|; #eta resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_eta_99   = new TH1F("resVsEta_eta_99",   ";Tracking particle |#eta|; #eta resolution [cm]", 24,0,2.4);
+  TH1F* h2_resVsEta_eta_68  = new TH1F("resVsEta_eta_68",   ";Tracking particle |#eta|; #eta resolution", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_eta_90   = new TH1F("resVsEta_eta_90",   ";Tracking particle |#eta|; #eta resolution", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_eta_99   = new TH1F("resVsEta_eta_99",   ";Tracking particle |#eta|; #eta resolution", nETARANGE,0,2.4);
 
-  TH1F* h2_resVsEta_z0_68   = new TH1F("resVsEta_z0_68",   ";Tracking particle |#eta|; z_{0} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_z0_90   = new TH1F("resVsEta_z0_90",   ";Tracking particle |#eta|; z_{0} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_z0_99   = new TH1F("resVsEta_z0_99",   ";Tracking particle |#eta|; z_{0} resolution [cm]", 24,0,2.4);
+  TH1F* h2_resVsEta_z0_68   = new TH1F("resVsEta_z0_68",   ";Tracking particle |#eta|; z_{0} resolution [cm]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_z0_90   = new TH1F("resVsEta_z0_90",   ";Tracking particle |#eta|; z_{0} resolution [cm]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_z0_99   = new TH1F("resVsEta_z0_99",   ";Tracking particle |#eta|; z_{0} resolution [cm]", nETARANGE,0,2.4);
 
-  TH1F* h2_resVsEta_phi_68   = new TH1F("resVsEta_phi_68",   ";Tracking particle |#eta|; #phi resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_phi_90   = new TH1F("resVsEta_phi_90",   ";Tracking particle |#eta|; #phi resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_phi_99   = new TH1F("resVsEta_phi_99",   ";Tracking particle |#eta|; #phi resolution [cm]", 24,0,2.4);
+  TH1F* h2_resVsEta_phi_68   = new TH1F("resVsEta_phi_68",   ";Tracking particle |#eta|; #phi resolution [rad]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_phi_90   = new TH1F("resVsEta_phi_90",   ";Tracking particle |#eta|; #phi resolution [rad]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_phi_99   = new TH1F("resVsEta_phi_99",   ";Tracking particle |#eta|; #phi resolution [rad]", nETARANGE,0,2.4);
 
-  TH1F* h2_resVsEta_ptRel_68   = new TH1F("resVsEta_ptRel_68",   ";Tracking particle |#eta|; p_{T} resolution / p_{T} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_ptRel_90   = new TH1F("resVsEta_ptRel_90",   ";Tracking particle |#eta|; p_{T} resolution / p_{T} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_ptRel_99   = new TH1F("resVsEta_ptRel_99",   ";Tracking particle |#eta|; p_{T} resolution / p_{T} resolution [cm]", 24,0,2.4);
+  TH1F* h2_resVsEta_ptRel_68   = new TH1F("resVsEta_ptRel_68",   ";Tracking particle |#eta|; p_{T} resolution / p_{T}", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_ptRel_90   = new TH1F("resVsEta_ptRel_90",   ";Tracking particle |#eta|; p_{T} resolution / p_{T}", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_ptRel_99   = new TH1F("resVsEta_ptRel_99",   ";Tracking particle |#eta|; p_{T} resolution / p_{T}", nETARANGE,0,2.4);
   
-  TH1F* h2_resVsEta_d0_68   = new TH1F("resVsEta_d0_68",   ";Tracking particle |#eta|; d_{0} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_d0_90   = new TH1F("resVsEta_d0_90",   ";Tracking particle |#eta|; d_{0} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_d0_99   = new TH1F("resVsEta_d0_99",   ";Tracking particle |#eta|; d_{0} resolution [cm]", 24,0,2.4);
+  TH1F* h2_resVsEta_d0_68   = new TH1F("resVsEta_d0_68",   ";Tracking particle |#eta|; d_{0} resolution [cm]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_d0_90   = new TH1F("resVsEta_d0_90",   ";Tracking particle |#eta|; d_{0} resolution [cm]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_d0_99   = new TH1F("resVsEta_d0_99",   ";Tracking particle |#eta|; d_{0} resolution [cm]", nETARANGE,0,2.4);
 
-  TH1F* h2_resVsEta_eta_L_68   = new TH1F("resVsEta_eta_L_68",  ";Tracking particle |#eta|; #eta resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_z0_L_68    = new TH1F("resVsEta_z0_L_68",   ";Tracking particle |#eta|; z_{0} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_phi_L_68   = new TH1F("resVsEta_phi_L_68",  ";Tracking particle |#eta|; #phi resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_ptRel_L_68 = new TH1F("resVsEta_ptRel_L_68",";Tracking particle |#eta|; p_{T} resolution / p_{T} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_d0_L_68    = new TH1F("resVsEta_d0_L_68",   ";Tracking particle |#eta|; d_{0} resolution [cm]", 24,0,2.4);
+  TH1F* h2_resVsEta_eta_L_68   = new TH1F("resVsEta_eta_L_68",  ";Tracking particle |#eta|; #eta resolution", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_z0_L_68    = new TH1F("resVsEta_z0_L_68",   ";Tracking particle |#eta|; z_{0} resolution [cm]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_phi_L_68   = new TH1F("resVsEta_phi_L_68",  ";Tracking particle |#eta|; #phi resolution [rad]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_ptRel_L_68 = new TH1F("resVsEta_ptRel_L_68",";Tracking particle |#eta|; p_{T} resolution / p_{T}", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_d0_L_68    = new TH1F("resVsEta_d0_L_68",   ";Tracking particle |#eta|; d_{0} resolution [cm]", nETARANGE,0,2.4);
 
-  TH1F* h2_resVsEta_eta_L_90   = new TH1F("resVsEta_eta_L_90",  ";Tracking particle |#eta|; #eta resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_z0_L_90    = new TH1F("resVsEta_z0_L_90",   ";Tracking particle |#eta|; z_{0} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_phi_L_90   = new TH1F("resVsEta_phi_L_90",  ";Tracking particle |#eta|; #phi resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_ptRel_L_90 = new TH1F("resVsEta_ptRel_L_90",";Tracking particle |#eta|; p_{T} resolution / p_{T} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_d0_L_90    = new TH1F("resVsEta_d0_L_90",   ";Tracking particle |#eta|; d_{0} resolution [cm]", 24,0,2.4);
+  TH1F* h2_resVsEta_eta_L_90   = new TH1F("resVsEta_eta_L_90",  ";Tracking particle |#eta|; #eta resolution", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_z0_L_90    = new TH1F("resVsEta_z0_L_90",   ";Tracking particle |#eta|; z_{0} resolution [cm]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_phi_L_90   = new TH1F("resVsEta_phi_L_90",  ";Tracking particle |#eta|; #phi resolution [rad]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_ptRel_L_90 = new TH1F("resVsEta_ptRel_L_90",";Tracking particle |#eta|; p_{T} resolution / p_{T}", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_d0_L_90    = new TH1F("resVsEta_d0_L_90",   ";Tracking particle |#eta|; d_{0} resolution [cm]", nETARANGE,0,2.4);
 
-  TH1F* h2_resVsEta_eta_L_99   = new TH1F("resVsEta_eta_L_99",  ";Tracking particle |#eta|; #eta resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_z0_L_99    = new TH1F("resVsEta_z0_L_99",   ";Tracking particle |#eta|; z_{0} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_phi_L_99   = new TH1F("resVsEta_phi_L_99",  ";Tracking particle |#eta|; #phi resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_ptRel_L_99 = new TH1F("resVsEta_ptRel_L_99",";Tracking particle |#eta|; p_{T} resolution / p_{T} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_d0_L_99    = new TH1F("resVsEta_d0_L_99",   ";Tracking particle |#eta|; d_{0} resolution [cm]", 24,0,2.4);
+  TH1F* h2_resVsEta_eta_L_99   = new TH1F("resVsEta_eta_L_99",  ";Tracking particle |#eta|; #eta resolution", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_z0_L_99    = new TH1F("resVsEta_z0_L_99",   ";Tracking particle |#eta|; z_{0} resolution [cm]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_phi_L_99   = new TH1F("resVsEta_phi_L_99",  ";Tracking particle |#eta|; #phi resolution [rad]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_ptRel_L_99 = new TH1F("resVsEta_ptRel_L_99",";Tracking particle |#eta|; p_{T} resolution / p_{T}", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_d0_L_99    = new TH1F("resVsEta_d0_L_99",   ";Tracking particle |#eta|; d_{0} resolution [cm]", nETARANGE,0,2.4);
 
-  TH1F* h2_resVsEta_eta_H_68   = new TH1F("resVsEta_eta_H_68",  ";Tracking particle |#eta|; #eta resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_z0_H_68    = new TH1F("resVsEta_z0_H_68",   ";Tracking particle |#eta|; z_{0} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_phi_H_68   = new TH1F("resVsEta_phi_H_68",  ";Tracking particle |#eta|; #phi resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_ptRel_H_68 = new TH1F("resVsEta_ptRel_H_68",";Tracking particle |#eta|; p_{T} resolution / p_{T} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_d0_H_68    = new TH1F("resVsEta_d0_H_68",   ";Tracking particle |#eta|; d_{0} resolution [cm]", 24,0,2.4);
+  TH1F* h2_resVsEta_eta_H_68   = new TH1F("resVsEta_eta_H_68",  ";Tracking particle |#eta|; #eta resolution", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_z0_H_68    = new TH1F("resVsEta_z0_H_68",   ";Tracking particle |#eta|; z_{0} resolution [cm]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_phi_H_68   = new TH1F("resVsEta_phi_H_68",  ";Tracking particle |#eta|; #phi resolution [rad]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_ptRel_H_68 = new TH1F("resVsEta_ptRel_H_68",";Tracking particle |#eta|; p_{T} resolution / p_{T}", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_d0_H_68    = new TH1F("resVsEta_d0_H_68",   ";Tracking particle |#eta|; d_{0} resolution [cm]", nETARANGE,0,2.4);
 
-  TH1F* h2_resVsEta_eta_H_90   = new TH1F("resVsEta_eta_H_90",  ";Tracking particle |#eta|; #eta resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_z0_H_90    = new TH1F("resVsEta_z0_H_90",   ";Tracking particle |#eta|; z_{0} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_phi_H_90   = new TH1F("resVsEta_phi_H_90",  ";Tracking particle |#eta|; #phi resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_ptRel_H_90 = new TH1F("resVsEta_ptRel_H_90",";Tracking particle |#eta|; p_{T} resolution / p_{T} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_d0_H_90    = new TH1F("resVsEta_d0_H_90",   ";Tracking particle |#eta|; d_{0} resolution [cm]", 24,0,2.4);
+  TH1F* h2_resVsEta_eta_H_90   = new TH1F("resVsEta_eta_H_90",  ";Tracking particle |#eta|; #eta resolution", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_z0_H_90    = new TH1F("resVsEta_z0_H_90",   ";Tracking particle |#eta|; z_{0} resolution [cm]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_phi_H_90   = new TH1F("resVsEta_phi_H_90",  ";Tracking particle |#eta|; #phi resolution [rad]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_ptRel_H_90 = new TH1F("resVsEta_ptRel_H_90",";Tracking particle |#eta|; p_{T} resolution / p_{T}", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_d0_H_90    = new TH1F("resVsEta_d0_H_90",   ";Tracking particle |#eta|; d_{0} resolution [cm]", nETARANGE,0,2.4);
 
-  TH1F* h2_resVsEta_eta_H_99   = new TH1F("resVsEta_eta_H_99",  ";Tracking particle |#eta|; #eta resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_z0_H_99    = new TH1F("resVsEta_z0_H_99",   ";Tracking particle |#eta|; z_{0} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_phi_H_99   = new TH1F("resVsEta_phi_H_99",  ";Tracking particle |#eta|; #phi resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_ptRel_H_99 = new TH1F("resVsEta_ptRel_H_99",";Tracking particle |#eta|; p_{T} resolution / p_{T} resolution [cm]", 24,0,2.4);
-  TH1F* h2_resVsEta_d0_H_99    = new TH1F("resVsEta_d0_H_99",   ";Tracking particle |#eta|; d_{0} resolution [cm]", 24,0,2.4);
+  TH1F* h2_resVsEta_eta_H_99   = new TH1F("resVsEta_eta_H_99",  ";Tracking particle |#eta|; #eta resolution", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_z0_H_99    = new TH1F("resVsEta_z0_H_99",   ";Tracking particle |#eta|; z_{0} resolution [cm]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_phi_H_99   = new TH1F("resVsEta_phi_H_99",  ";Tracking particle |#eta|; #phi resolution [rad]", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_ptRel_H_99 = new TH1F("resVsEta_ptRel_H_99",";Tracking particle |#eta|; p_{T} resolution / p_{T}", nETARANGE,0,2.4);
+  TH1F* h2_resVsEta_d0_H_99    = new TH1F("resVsEta_d0_H_99",   ";Tracking particle |#eta|; d_{0} resolution [cm]", nETARANGE,0,2.4);
 
 
 
   // resolution vs. eta histograms (gaussian fit)
-  TH1F* h3_resVsEta_eta_L = new TH1F("resVsEta_eta_L_gaus", ";|#eta|; #sigma(#eta)", 24,0,2.4);
-  TH1F* h3_resVsEta_eta_H = new TH1F("resVsEta_eta_H_gaus", ";|#eta|; #sigma(#eta)", 24,0,2.4);
+  TH1F* h3_resVsEta_eta_L = new TH1F("resVsEta_eta_L_gaus", ";|#eta|; #sigma(#eta)", nETARANGE,0,2.4);
+  TH1F* h3_resVsEta_eta_H = new TH1F("resVsEta_eta_H_gaus", ";|#eta|; #sigma(#eta)", nETARANGE,0,2.4);
 
-  TH1F* h3_resVsEta_z0_L = new TH1F("resVsEta_z0_L_gaus", ";|#eta|; #sigma(z_{0}) [cm]", 24,0,2.4);
-  TH1F* h3_resVsEta_z0_H = new TH1F("resVsEta_z0_H_gaus", ";|#eta|; #sigma(z_{0}) [cm]", 24,0,2.4);
+  TH1F* h3_resVsEta_z0_L = new TH1F("resVsEta_z0_L_gaus", ";|#eta|; #sigma(z_{0}) [cm]", nETARANGE,0,2.4);
+  TH1F* h3_resVsEta_z0_H = new TH1F("resVsEta_z0_H_gaus", ";|#eta|; #sigma(z_{0}) [cm]", nETARANGE,0,2.4);
 
-  TH1F* h3_resVsEta_phi_L = new TH1F("resVsEta_phi_L_gaus", ";|#eta|; #sigma(#phi) [rad]", 24,0,2.4);
-  TH1F* h3_resVsEta_phi_H = new TH1F("resVsEta_phi_H_gaus", ";|#eta|; #sigma(#phi) [rad]", 24,0,2.4);
+  TH1F* h3_resVsEta_phi_L = new TH1F("resVsEta_phi_L_gaus", ";|#eta|; #sigma(#phi) [rad]", nETARANGE,0,2.4);
+  TH1F* h3_resVsEta_phi_H = new TH1F("resVsEta_phi_H_gaus", ";|#eta|; #sigma(#phi) [rad]", nETARANGE,0,2.4);
 
-  TH1F* h3_resVsEta_ptRel_L = new TH1F("resVsEta_ptRel_L_gaus", ";|#eta|; #sigma(p_{T}) / p_{T}", 24,0,2.4);
-  TH1F* h3_resVsEta_ptRel_H = new TH1F("resVsEta_ptRel_H_gaus", ";|#eta|; #sigma(p_{T}) / p_{T}", 24,0,2.4);
+  TH1F* h3_resVsEta_ptRel_L = new TH1F("resVsEta_ptRel_L_gaus", ";|#eta|; #sigma(p_{T}) / p_{T}", nETARANGE,0,2.4);
+  TH1F* h3_resVsEta_ptRel_H = new TH1F("resVsEta_ptRel_H_gaus", ";|#eta|; #sigma(p_{T}) / p_{T}", nETARANGE,0,2.4);
 
   TString fitdir = "FitResults/";
 
@@ -1654,9 +1673,9 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   }
 
 
-  TH1F* h2_resVsPhi_pt_68    = new TH1F("resVsPhi2_pt_68",   ";Tracking particle #phi; p_{T} resolution",         32,-3.2,3.2);
-  TH1F* h2_resVsPhi_pt_90    = new TH1F("resVsPhi2_pt_90",   ";Tracking particle #phi; p_{T} resolution",         32,-3.2,3.2);
-  TH1F* h2_resVsPhi_pt_99    = new TH1F("resVsPhi2_pt_99",   ";Tracking particle #phi; p_{T} resolution",         32,-3.2,3.2);
+  TH1F* h2_resVsPhi_pt_68    = new TH1F("resVsPhi2_pt_68",   ";Tracking particle #phi; p_{T} resolution [GeV]",         32,-3.2,3.2);
+  TH1F* h2_resVsPhi_pt_90    = new TH1F("resVsPhi2_pt_90",   ";Tracking particle #phi; p_{T} resolution [GeV]",         32,-3.2,3.2);
+  TH1F* h2_resVsPhi_pt_99    = new TH1F("resVsPhi2_pt_99",   ";Tracking particle #phi; p_{T} resolution [GeV]",         32,-3.2,3.2);
   TH1F* h2_resVsPhi_ptRel_68 = new TH1F("resVsPhi2_ptRel_68",";Tracking particle #phi; p_{T} resolution / p_{T}", 32,-3.2,3.2);
   TH1F* h2_resVsPhi_ptRel_90 = new TH1F("resVsPhi2_ptRel_90",";Tracking particle #phi; p_{T} resolution / p_{T}", 32,-3.2,3.2);
   TH1F* h2_resVsPhi_ptRel_99 = new TH1F("resVsPhi2_ptRel_99",";Tracking particle #phi; p_{T} resolution / p_{T}", 32,-3.2,3.2);
@@ -1726,10 +1745,18 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     sprintf(pdgidtxt,"_pdgid%i",TP_select_pdgid);
     type = type+pdgidtxt;
   }
-  //else if (TP_select_injet == 1) type = type+"_injet";
-  //else if (TP_select_injet == 2) type = type+"_injet_highpt";
+  else if (TP_select_injet == 1) type = type+"_injet";
+  else if (TP_select_injet == 2) type = type+"_injet_highpt";
 
-  TFile* fout = new TFile("output_"+type+".root","recreate");
+  if (TP_minPt > 2.0) {
+    char pttxt[500];
+    sprintf(pttxt,"_pt%.0f",TP_minPt);
+    type = type+pttxt;
+  }
+
+  TFile* fout;
+  if (doLooseMatch) fout = new TFile("output_loose_"+type+treeName+".root","recreate");
+  else fout = new TFile("output_"+type+treeName+".root","recreate");
   
   
   // -------------------------------------------------------------------------------------------
@@ -1742,47 +1769,58 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   TString DIR = "TrkPlots/";
 
   // plots overlaying 68, 90, 99% confidence levels]
-  // if (doDetailedPlots) {
-    // makeResidualIntervalPlot will save the individual plots to the root file
-    makeResidualIntervalPlot( type, DIR, "resVsPt_ptRel", h2_resVsPt_ptRel_68, h2_resVsPt_ptRel_90, h2_resVsPt_ptRel_99, 0, 0.5 );
-    makeResidualIntervalPlot( type, DIR, "resVsPt_pt", h2_resVsPt_pt_68, h2_resVsPt_pt_90, h2_resVsPt_pt_99, 0, 20 );
-    makeResidualIntervalPlot( type, DIR, "resVsPt_z0", h2_resVsPt_z0_68, h2_resVsPt_z0_90, h2_resVsPt_z0_99, 0, 2.0 );
-    makeResidualIntervalPlot( type, DIR, "resVsPt_phi", h2_resVsPt_phi_68, h2_resVsPt_phi_90, h2_resVsPt_phi_99, 0, 0.006 );
-    makeResidualIntervalPlot( type, DIR, "resVsPt_eta", h2_resVsPt_eta_68, h2_resVsPt_eta_90, h2_resVsPt_eta_99, 0, 0.05 );
-    //makeResidualIntervalPlot( type, DIR, "resVsPt_d0", h2_resVsPt_d0_68, h2_resVsPt_d0_90, h2_resVsPt_d0_99, 0, 0.02 );
 
-  if (doDetailedPlots) {
-    makeResidualIntervalPlot( type, DIR, "resVsPt_L_ptRel", h2_resVsPt_ptRel_L_68, h2_resVsPt_ptRel_L_90, h2_resVsPt_ptRel_L_99, 0, 0.5 );
-    makeResidualIntervalPlot( type, DIR, "resVsPt_L_pt", h2_resVsPt_pt_L_68, h2_resVsPt_pt_L_90, h2_resVsPt_pt_L_99, 0, 20 );
-    makeResidualIntervalPlot( type, DIR, "resVsPt_L_z0", h2_resVsPt_z0_L_68, h2_resVsPt_z0_L_90, h2_resVsPt_z0_L_99, 0, 2.0 );
-    makeResidualIntervalPlot( type, DIR, "resVsPt_L_phi", h2_resVsPt_phi_L_68, h2_resVsPt_phi_L_90, h2_resVsPt_phi_L_99, 0, 0.1 );
-    makeResidualIntervalPlot( type, DIR, "resVsPt_L_eta", h2_resVsPt_eta_L_68, h2_resVsPt_eta_L_90, h2_resVsPt_eta_L_99, 0, 0.05 );
-    //makeResidualIntervalPlot( type, DIR, "resVsPt_L_d0", h2_resVsPt_d0_L_68, h2_resVsPt_d0_L_90, h2_resVsPt_d0_L_99, 0, 0.02 );
+  float max_eta_ptRel = 0.2;
+  float max_pt_ptRel = 0.2;
+  float max_pt_pt = 20;
+  float max_z0 = 2.0;
+  float max_phi = 0.01;
+  float max_eta = 0.03;
+
+  if (type.Contains("Electron")) {
+    max_pt_ptRel = 1.0;
+    max_eta_ptRel = 1.0;
+    max_phi = 0.1;
   }
-    makeResidualIntervalPlot( type, DIR, "resVsEta_eta", h2_resVsEta_eta_68, h2_resVsEta_eta_90, h2_resVsEta_eta_99, 0, 0.05 );
-    makeResidualIntervalPlot( type, DIR, "resVsEta_z0", h2_resVsEta_z0_68, h2_resVsEta_z0_90, h2_resVsEta_z0_99, 0, 2.0 );
-    makeResidualIntervalPlot( type, DIR, "resVsEta_phi", h2_resVsEta_phi_68, h2_resVsEta_phi_90, h2_resVsEta_phi_99, 0, 0.01 );
-    makeResidualIntervalPlot( type, DIR, "resVsEta_ptRel", h2_resVsEta_ptRel_68, h2_resVsEta_ptRel_90, h2_resVsEta_ptRel_99, 0, 0.4 );
-    //makeResidualIntervalPlot( type, DIR, "resVsEta_d0", h2_resVsEta_d0_68, h2_resVsEta_d0_90, h2_resVsEta_d0_99, 0, 0.02 );
 
-  if (doDetailedPlots) {
-    makeResidualIntervalPlot( type, DIR, "resVsEta_L_eta", h2_resVsEta_eta_L_68, h2_resVsEta_eta_L_90, h2_resVsEta_eta_L_99, 0, 0.05 );
-    makeResidualIntervalPlot( type, DIR, "resVsEta_L_z0", h2_resVsEta_z0_L_68, h2_resVsEta_z0_L_90, h2_resVsEta_z0_L_99, 0, 2.0 );
-    makeResidualIntervalPlot( type, DIR, "resVsEta_L_phi", h2_resVsEta_phi_L_68, h2_resVsEta_phi_L_90, h2_resVsEta_phi_L_99, 0, 0.01 );
-    makeResidualIntervalPlot( type, DIR, "resVsEta_L_ptRel", h2_resVsEta_ptRel_L_68, h2_resVsEta_ptRel_L_90, h2_resVsEta_ptRel_L_99, 0, 0.4 );
-    //makeResidualIntervalPlot( type, DIR, "resVsEta_L_d0", h2_resVsEta_d0_L_68, h2_resVsEta_d0_L_90, h2_resVsEta_d0_L_99, 0, 0.02 );
+  // makeResidualIntervalPlot will save the individual plots to the root file
+  makeResidualIntervalPlot( type, DIR, "resVsPt_ptRel", h2_resVsPt_ptRel_68, h2_resVsPt_ptRel_90, h2_resVsPt_ptRel_99, 0, max_pt_ptRel );
+  makeResidualIntervalPlot( type, DIR, "resVsPt_pt", h2_resVsPt_pt_68, h2_resVsPt_pt_90, h2_resVsPt_pt_99, 0, max_pt_pt );
+  makeResidualIntervalPlot( type, DIR, "resVsPt_z0", h2_resVsPt_z0_68, h2_resVsPt_z0_90, h2_resVsPt_z0_99, 0, max_z0 );
+  makeResidualIntervalPlot( type, DIR, "resVsPt_phi", h2_resVsPt_phi_68, h2_resVsPt_phi_90, h2_resVsPt_phi_99, 0, max_phi );
+  makeResidualIntervalPlot( type, DIR, "resVsPt_eta", h2_resVsPt_eta_68, h2_resVsPt_eta_90, h2_resVsPt_eta_99, 0, max_eta );
+  //makeResidualIntervalPlot( type, DIR, "resVsPt_d0", h2_resVsPt_d0_68, h2_resVsPt_d0_90, h2_resVsPt_d0_99, 0, 0.02 );
   
-    makeResidualIntervalPlot( type, DIR, "resVsEta_H_eta", h2_resVsEta_eta_H_68, h2_resVsEta_eta_H_90, h2_resVsEta_eta_H_99, 0, 0.05 );
-    makeResidualIntervalPlot( type, DIR, "resVsEta_H_z0", h2_resVsEta_z0_H_68, h2_resVsEta_z0_H_90, h2_resVsEta_z0_H_99, 0, 2.0 );
-    makeResidualIntervalPlot( type, DIR, "resVsEta_H_phi", h2_resVsEta_phi_H_68, h2_resVsEta_phi_H_90, h2_resVsEta_phi_H_99, 0, 0.01 );
-    makeResidualIntervalPlot( type, DIR, "resVsEta_H_ptRel", h2_resVsEta_ptRel_H_68, h2_resVsEta_ptRel_H_90, h2_resVsEta_ptRel_H_99, 0, 0.4 );
-    //makeResidualIntervalPlot( type, DIR, "resVsEta_H_d0", h2_resVsEta_d0_H_68, h2_resVsEta_d0_H_90, h2_resVsEta_d0_H_99, 0, 0.02 );
-
+  makeResidualIntervalPlot( type, DIR, "resVsPt_L_ptRel", h2_resVsPt_ptRel_L_68, h2_resVsPt_ptRel_L_90, h2_resVsPt_ptRel_L_99, 0, max_pt_ptRel );
+  makeResidualIntervalPlot( type, DIR, "resVsPt_L_pt", h2_resVsPt_pt_L_68, h2_resVsPt_pt_L_90, h2_resVsPt_pt_L_99, 0, max_pt_pt );
+  makeResidualIntervalPlot( type, DIR, "resVsPt_L_z0", h2_resVsPt_z0_L_68, h2_resVsPt_z0_L_90, h2_resVsPt_z0_L_99, 0, max_z0 );
+  makeResidualIntervalPlot( type, DIR, "resVsPt_L_phi", h2_resVsPt_phi_L_68, h2_resVsPt_phi_L_90, h2_resVsPt_phi_L_99, 0, max_phi );
+  makeResidualIntervalPlot( type, DIR, "resVsPt_L_eta", h2_resVsPt_eta_L_68, h2_resVsPt_eta_L_90, h2_resVsPt_eta_L_99, 0, max_eta );
+  //makeResidualIntervalPlot( type, DIR, "resVsPt_L_d0", h2_resVsPt_d0_L_68, h2_resVsPt_d0_L_90, h2_resVsPt_d0_L_99, 0, 0.02 );
+  
+  makeResidualIntervalPlot( type, DIR, "resVsEta_eta", h2_resVsEta_eta_68, h2_resVsEta_eta_90, h2_resVsEta_eta_99, 0, max_eta );
+  makeResidualIntervalPlot( type, DIR, "resVsEta_z0", h2_resVsEta_z0_68, h2_resVsEta_z0_90, h2_resVsEta_z0_99, 0, max_z0 );
+  makeResidualIntervalPlot( type, DIR, "resVsEta_phi", h2_resVsEta_phi_68, h2_resVsEta_phi_90, h2_resVsEta_phi_99, 0, max_phi );
+  makeResidualIntervalPlot( type, DIR, "resVsEta_ptRel", h2_resVsEta_ptRel_68, h2_resVsEta_ptRel_90, h2_resVsEta_ptRel_99, 0, max_eta_ptRel );
+  //makeResidualIntervalPlot( type, DIR, "resVsEta_d0", h2_resVsEta_d0_68, h2_resVsEta_d0_90, h2_resVsEta_d0_99, 0, 0.02 );
+  
+  makeResidualIntervalPlot( type, DIR, "resVsEta_L_eta", h2_resVsEta_eta_L_68, h2_resVsEta_eta_L_90, h2_resVsEta_eta_L_99, 0, max_eta );
+  makeResidualIntervalPlot( type, DIR, "resVsEta_L_z0", h2_resVsEta_z0_L_68, h2_resVsEta_z0_L_90, h2_resVsEta_z0_L_99, 0, max_z0 );
+  makeResidualIntervalPlot( type, DIR, "resVsEta_L_phi", h2_resVsEta_phi_L_68, h2_resVsEta_phi_L_90, h2_resVsEta_phi_L_99, 0, max_phi );
+  makeResidualIntervalPlot( type, DIR, "resVsEta_L_ptRel", h2_resVsEta_ptRel_L_68, h2_resVsEta_ptRel_L_90, h2_resVsEta_ptRel_L_99, 0, max_eta_ptRel );
+  //makeResidualIntervalPlot( type, DIR, "resVsEta_L_d0", h2_resVsEta_d0_L_68, h2_resVsEta_d0_L_90, h2_resVsEta_d0_L_99, 0, 0.02 );
+  
+  makeResidualIntervalPlot( type, DIR, "resVsEta_H_eta", h2_resVsEta_eta_H_68, h2_resVsEta_eta_H_90, h2_resVsEta_eta_H_99, 0, max_eta );
+  makeResidualIntervalPlot( type, DIR, "resVsEta_H_z0", h2_resVsEta_z0_H_68, h2_resVsEta_z0_H_90, h2_resVsEta_z0_H_99, 0, max_z0 );
+  makeResidualIntervalPlot( type, DIR, "resVsEta_H_phi", h2_resVsEta_phi_H_68, h2_resVsEta_phi_H_90, h2_resVsEta_phi_H_99, 0, max_phi );
+  makeResidualIntervalPlot( type, DIR, "resVsEta_H_ptRel", h2_resVsEta_ptRel_H_68, h2_resVsEta_ptRel_H_90, h2_resVsEta_ptRel_H_99, 0, max_eta_ptRel );
+  //makeResidualIntervalPlot( type, DIR, "resVsEta_H_d0", h2_resVsEta_d0_H_68, h2_resVsEta_d0_H_90, h2_resVsEta_d0_H_99, 0, 0.02 );
+  
+  if (doDetailedPlots) {
     makeResidualIntervalPlot( type, DIR, "resVsPhi_ptRel", h2_resVsPhi_ptRel_68, h2_resVsPhi_ptRel_90, h2_resVsPhi_ptRel_99, 0, 0.5 );
     makeResidualIntervalPlot( type, DIR, "resVsPhi_pt", h2_resVsPhi_pt_68, h2_resVsPhi_pt_90, h2_resVsPhi_pt_99, 0, 20 );
   }
-  // }
-
+  
 
   // ----------------------------------------------------------------------------------------------------------
   // resoultion vs pt
@@ -1791,38 +1829,38 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   h2_resVsPt_pt_90->SetMinimum(0);
   h2_resVsPt_pt_90->SetMarkerStyle(20);
   h2_resVsPt_pt_90->Draw("p");
-  c.SaveAs(DIR+type+"_resVsPt_pt_90.eps");
+  c.SaveAs(DIR+type+"_resVsPt_pt_90.pdf");
   c.SaveAs(DIR+type+"_resVsPt_pt_90.png");
 
   h2_resVsPt_ptRel_90->SetMinimum(0);
   h2_resVsPt_ptRel_90->SetMarkerStyle(20);
   h2_resVsPt_ptRel_90->Draw("p");
-  c.SaveAs(DIR+type+"_resVsPt_ptRel_90.eps");
+  c.SaveAs(DIR+type+"_resVsPt_ptRel_90.pdf");
   c.SaveAs(DIR+type+"_resVsPt_ptRel_90.png");
 
   h2_resVsPt_z0_90->SetMinimum(0);
   h2_resVsPt_z0_90->SetMarkerStyle(20);
   h2_resVsPt_z0_90->Draw("p");
-  c.SaveAs(DIR+type+"_resVsPt_z0_90.eps");
+  c.SaveAs(DIR+type+"_resVsPt_z0_90.pdf");
   c.SaveAs(DIR+type+"_resVsPt_z0_90.png");
 
   h2_resVsPt_phi_90->SetMinimum(0);
   h2_resVsPt_phi_90->SetMarkerStyle(20);
   h2_resVsPt_phi_90->Draw("p");
-  c.SaveAs(DIR+type+"_resVsPt_phi_90.eps");
+  c.SaveAs(DIR+type+"_resVsPt_phi_90.pdf");
   c.SaveAs(DIR+type+"_resVsPt_phi_90.png");
 
   h2_resVsPt_eta_90->SetMinimum(0);
   h2_resVsPt_eta_90->SetMarkerStyle(20);
   h2_resVsPt_eta_90->Draw("p");
-  c.SaveAs(DIR+type+"_resVsPt_eta_90.eps");
+  c.SaveAs(DIR+type+"_resVsPt_eta_90.pdf");
   c.SaveAs(DIR+type+"_resVsPt_eta_90.png");
 
   /*
   h2_resVsPt_phi_90->SetMinimum(0);
   h2_resVsPt_d0_90->SetMarkerStyle(20);
   h2_resVsPt_d0_90->Draw("p");
-  c.SaveAs(DIR+type+"_resVsPt_d0_90.eps");
+  c.SaveAs(DIR+type+"_resVsPt_d0_90.pdf");
   c.SaveAs(DIR+type+"_resVsPt_d0_90.png");
   */
 
@@ -1864,98 +1902,122 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   h2_resVsEta_eta_90->SetMinimum(0);
   h2_resVsEta_eta_90->SetMarkerStyle(20);
   h2_resVsEta_eta_90->Draw("p");
-  c.SaveAs(DIR+type+"_resVsEta_eta_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_eta_90.pdf");
   c.SaveAs(DIR+type+"_resVsEta_eta_90.png");
+
+  h2_resVsEta_eta_68->SetMinimum(0);
+  h2_resVsEta_eta_68->SetMarkerStyle(20);
+  h2_resVsEta_eta_68->Draw("p");
+  c.SaveAs(DIR+type+"_resVsEta_eta_68.pdf");
+  c.SaveAs(DIR+type+"_resVsEta_eta_68.png");
 
   if (doDetailedPlots) {
     h2_resVsEta_eta_L_90->Draw("p");
     sprintf(ctxt,"p_{T} < 8 GeV");
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_resVsEta_eta_L_90.eps");
+    c.SaveAs(DIR+type+"_resVsEta_eta_L_90.pdf");
     c.SaveAs(DIR+type+"_resVsEta_eta_L_90.png");
     
     h2_resVsEta_eta_H_90->Draw("p");
     sprintf(ctxt,"p_{T} > 8 GeV");
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_resVsEta_eta_H_90.eps");
+    c.SaveAs(DIR+type+"_resVsEta_eta_H_90.pdf");
     c.SaveAs(DIR+type+"_resVsEta_eta_H_90.png");
   }
 
   h2_resVsEta_z0_90->SetMinimum(0);
   h2_resVsEta_z0_90->SetMarkerStyle(20);
   h2_resVsEta_z0_90->Draw("p");
-  c.SaveAs(DIR+type+"_resVsEta_z0_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_z0_90.pdf");
   c.SaveAs(DIR+type+"_resVsEta_z0_90.png");
+
+  h2_resVsEta_z0_68->SetMinimum(0);
+  h2_resVsEta_z0_68->SetMarkerStyle(20);
+  h2_resVsEta_z0_68->Draw("p");
+  c.SaveAs(DIR+type+"_resVsEta_z0_68.pdf");
+  c.SaveAs(DIR+type+"_resVsEta_z0_68.png");
 
   if (doDetailedPlots) {
     h2_resVsEta_z0_L_90->Draw();
     sprintf(ctxt,"p_{T} < 8 GeV");
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_resVsEta_z0_L_90.eps");
+    c.SaveAs(DIR+type+"_resVsEta_z0_L_90.pdf");
     c.SaveAs(DIR+type+"_resVsEta_z0_L_90.png");
     
     h2_resVsEta_z0_H_90->Draw();
     sprintf(ctxt,"p_{T} > 8 GeV");
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_resVsEta_z0_H_90.eps");
+    c.SaveAs(DIR+type+"_resVsEta_z0_H_90.pdf");
     c.SaveAs(DIR+type+"_resVsEta_z0_H_90.png");
   }
 
   /*
   h2_resVsEta_d0_90->Draw();
-  c.SaveAs(DIR+type+"_resVsEta_d0_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_d0_90.pdf");
   c.SaveAs(DIR+type+"_resVsEta_d0_90.png");
 
   h2_resVsEta_d0_L_90->Draw();
   sprintf(ctxt,"p_{T} < 8 GeV");
   mySmallText(0.22,0.82,1,ctxt);
-  c.SaveAs(DIR+type+"_resVsEta_d0_L_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_d0_L_90.pdf");
   c.SaveAs(DIR+type+"_resVsEta_d0_L_90.png");
 
   h2_resVsEta_d0_H_90->Draw();
   sprintf(ctxt,"p_{T} > 8 GeV");
   mySmallText(0.22,0.82,1,ctxt);
-  c.SaveAs(DIR+type+"_resVsEta_d0_H_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_d0_H_90.pdf");
   c.SaveAs(DIR+type+"_resVsEta_d0_H_90.png");
   */
 
   h2_resVsEta_phi_90->SetMinimum(0);
   h2_resVsEta_phi_90->SetMarkerStyle(20);
   h2_resVsEta_phi_90->Draw("p");
-  c.SaveAs(DIR+type+"_resVsEta_phi_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_phi_90.pdf");
   c.SaveAs(DIR+type+"_resVsEta_phi_90.png");
+
+  h2_resVsEta_phi_68->SetMinimum(0);
+  h2_resVsEta_phi_68->SetMarkerStyle(20);
+  h2_resVsEta_phi_68->Draw("p");
+  c.SaveAs(DIR+type+"_resVsEta_phi_68.pdf");
+  c.SaveAs(DIR+type+"_resVsEta_phi_68.png");
 
   if (doDetailedPlots) {
     h2_resVsEta_phi_L_90->Draw();
     sprintf(ctxt,"p_{T} < 8 GeV");
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_resVsEta_phi_L_90.eps");
+    c.SaveAs(DIR+type+"_resVsEta_phi_L_90.pdf");
     c.SaveAs(DIR+type+"_resVsEta_phi_L_90.png");
     
     h2_resVsEta_phi_H_90->Draw();
     sprintf(ctxt,"p_{T} > 8 GeV");
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_resVsEta_phi_H_90.eps");
+    c.SaveAs(DIR+type+"_resVsEta_phi_H_90.pdf");
     c.SaveAs(DIR+type+"_resVsEta_phi_H_90.png");
   }
 
   h2_resVsEta_ptRel_90->SetMinimum(0);
   h2_resVsEta_ptRel_90->SetMarkerStyle(20);
   h2_resVsEta_ptRel_90->Draw("p");
-  c.SaveAs(DIR+type+"_resVsEta_ptRel_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_ptRel_90.pdf");
   c.SaveAs(DIR+type+"_resVsEta_ptRel_90.png");
+
+  h2_resVsEta_ptRel_68->SetMinimum(0);
+  h2_resVsEta_ptRel_68->SetMarkerStyle(20);
+  h2_resVsEta_ptRel_68->Draw("p");
+  c.SaveAs(DIR+type+"_resVsEta_ptRel_68.pdf");
+  c.SaveAs(DIR+type+"_resVsEta_ptRel_68.png");
 
   if (doDetailedPlots) {
     h2_resVsEta_ptRel_L_90->Draw();
     sprintf(ctxt,"p_{T} < 8 GeV");
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_resVsEta_ptRel_L_90.eps");
+    c.SaveAs(DIR+type+"_resVsEta_ptRel_L_90.pdf");
     c.SaveAs(DIR+type+"_resVsEta_ptRel_L_90.png");
     
     h2_resVsEta_ptRel_H_90->Draw();
     sprintf(ctxt,"p_{T} > 8 GeV");
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_resVsEta_ptRel_H_90.eps");
+    c.SaveAs(DIR+type+"_resVsEta_ptRel_H_90.pdf");
     c.SaveAs(DIR+type+"_resVsEta_ptRel_H_90.png");
 
     h2_resVsEta_eta->Write();
@@ -2000,13 +2062,13 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     h2_resVsPhi_pt_90->SetMinimum(0);
     h2_resVsPhi_pt_90->SetMarkerStyle(20);
     h2_resVsPhi_pt_90->Draw("p");
-    c.SaveAs(DIR+type+"_resVsPhi_pt_90.eps");
+    c.SaveAs(DIR+type+"_resVsPhi_pt_90.pdf");
     c.SaveAs(DIR+type+"_resVsPhi_pt_90.png");
     
     h2_resVsPhi_ptRel_90->SetMinimum(0);
     h2_resVsPhi_ptRel_90->SetMarkerStyle(20);
     h2_resVsPhi_ptRel_90->Draw("p");
-    c.SaveAs(DIR+type+"_resVsPhi_ptRel_90.eps");
+    c.SaveAs(DIR+type+"_resVsPhi_ptRel_90.pdf");
     c.SaveAs(DIR+type+"_resVsPhi_ptRel_90.png");
   }
 
@@ -2026,13 +2088,13 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   sprintf(ctxt,"|eta| < 2.4");
   mySmallText(0.52,0.82,1,ctxt);
   c.SaveAs(DIR+type+"_match_trk_chi2.png");
-  c.SaveAs(DIR+type+"_match_trk_chi2.eps");
+  c.SaveAs(DIR+type+"_match_trk_chi2.pdf");
     
   h_match_trk_chi2_dof->Draw();
   sprintf(ctxt,"|eta| < 2.4");
   mySmallText(0.52,0.82,1,ctxt);
   c.SaveAs(DIR+type+"_match_trk_chi2_dof.png");
-  c.SaveAs(DIR+type+"_match_trk_chi2_dof.eps");
+  c.SaveAs(DIR+type+"_match_trk_chi2_dof.pdf");
 
   if (doDetailedPlots) {
     h_match_trk_chi2_C_L->Write();
@@ -2056,10 +2118,24 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   // ----------------------------------------------------------------------------------------------------------------
 
   // rebin pt/phi plots
-  h_tp_pt->Rebin(2);
+  h_tp_pt->Rebin(4);
+  h_match_tp_pt->Rebin(4);
   h_tp_phi->Rebin(2);
-  h_match_tp_pt->Rebin(2);
   h_match_tp_phi->Rebin(2);
+
+  h_tp_pt_L->Rebin(2);
+  h_match_tp_pt_L->Rebin(2);
+  h_tp_pt_LC->Rebin(2);
+  h_match_tp_pt_LC->Rebin(2);
+  h_tp_pt_H->Rebin(2);
+  h_match_tp_pt_H->Rebin(2);
+
+  h_tp_eta->Rebin(2);
+  h_match_tp_eta->Rebin(2);
+  h_tp_eta_L->Rebin(2);
+  h_match_tp_eta_L->Rebin(2);
+  h_tp_eta_H->Rebin(2);
+  h_match_tp_eta_H->Rebin(2);
 
   // calculate the effeciency
   h_match_tp_pt->Sumw2();
@@ -2111,6 +2187,28 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   h_eff_eta_H->GetYaxis()->SetTitle("Efficiency");
   h_eff_eta_H->Divide(h_match_tp_eta_H, h_tp_eta_H, 1.0, 1.0, "B");
 
+  h_match_tp_eta_23->Sumw2();
+  h_tp_eta_23->Sumw2();
+  TH1F* h_eff_eta_23 = (TH1F*) h_match_tp_eta_23->Clone();
+  h_eff_eta_23->SetName("eff_eta_23");
+  h_eff_eta_23->GetYaxis()->SetTitle("Efficiency");
+  h_eff_eta_23->Divide(h_match_tp_eta_23, h_tp_eta_23, 1.0, 1.0, "B");
+
+  h_match_tp_eta_35->Sumw2();
+  h_tp_eta_35->Sumw2();
+  TH1F* h_eff_eta_35 = (TH1F*) h_match_tp_eta_35->Clone();
+  h_eff_eta_35->SetName("eff_eta_35");
+  h_eff_eta_35->GetYaxis()->SetTitle("Efficiency");
+  h_eff_eta_35->Divide(h_match_tp_eta_35, h_tp_eta_35, 1.0, 1.0, "B");
+
+  h_match_tp_eta_5->Sumw2();
+  h_tp_eta_5->Sumw2();
+  TH1F* h_eff_eta_5 = (TH1F*) h_match_tp_eta_5->Clone();
+  h_eff_eta_5->SetName("eff_eta_5");
+  h_eff_eta_5->GetYaxis()->SetTitle("Efficiency");
+  h_eff_eta_5->Divide(h_match_tp_eta_5, h_tp_eta_5, 1.0, 1.0, "B");
+
+
   h_match_tp_phi->Sumw2();
   h_tp_phi->Sumw2();
   TH1F* h_eff_phi = (TH1F*) h_match_tp_phi->Clone();
@@ -2146,6 +2244,13 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   h_eff_d0->GetYaxis()->SetTitle("Efficiency");
   h_eff_d0->Divide(h_match_tp_d0, h_tp_d0, 1.0, 1.0, "B");
 
+  h_match_tp_absd0->Sumw2();
+  h_tp_absd0->Sumw2();
+  TH1F* h_eff_absd0 = (TH1F*) h_match_tp_absd0->Clone();
+  h_eff_absd0->SetName("eff_absd0");
+  h_eff_absd0->GetYaxis()->SetTitle("Efficiency");
+  h_eff_absd0->Divide(h_match_tp_absd0, h_tp_absd0, 1.0, 1.0, "B");
+
 
   // set the axis range
   h_eff_pt  ->SetAxisRange(0,1.1,"Y");
@@ -2155,13 +2260,20 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   h_eff_eta ->SetAxisRange(0,1.1,"Y");
   h_eff_eta_L ->SetAxisRange(0,1.1,"Y");
   h_eff_eta_H ->SetAxisRange(0,1.1,"Y");
+  h_eff_eta_23 ->SetAxisRange(0,1.1,"Y");
+  h_eff_eta_35 ->SetAxisRange(0,1.1,"Y");
+  h_eff_eta_5 ->SetAxisRange(0,1.1,"Y");
   h_eff_phi ->SetAxisRange(0,1.1,"Y");
   h_eff_z0  ->SetAxisRange(0,1.1,"Y");
   h_eff_z0_L  ->SetAxisRange(0,1.1,"Y");
   h_eff_z0_H  ->SetAxisRange(0,1.1,"Y");
   h_eff_d0  ->SetAxisRange(0,1.1,"Y");
+  h_eff_absd0  ->SetAxisRange(0,1.1,"Y");
 
-  if (type.Contains("Electron") || type.Contains("Pion")) h_eff_pt->SetAxisRange(0,49,"X");
+  if (type.Contains("Electron") || type.Contains("Pion") || type.Contains("Muon")) {
+    h_eff_pt->SetAxisRange(0,49,"X");
+    h_eff_pt_H->SetAxisRange(8,49,"X");
+  }
 
   gPad->SetGridx();
   gPad->SetGridy();
@@ -2169,67 +2281,87 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   // draw and save plots
   h_eff_pt->Draw();
   h_eff_pt->Write();
-  c.SaveAs(DIR+type+"_eff_pt.eps");
+  c.SaveAs(DIR+type+"_eff_pt.pdf");
   c.SaveAs(DIR+type+"_eff_pt.png");
 
   if (type.Contains("Mu")) {
     h_eff_pt->GetYaxis()->SetRangeUser(0.8,1.01); // zoomed-in plot
-    c.SaveAs(DIR+type+"_eff_pt_zoom.eps");
+    c.SaveAs(DIR+type+"_eff_pt_zoom.pdf");
     c.SaveAs(DIR+type+"_eff_pt_zoom.png");
   }
 
-  //  if (doDetailedPlots) {
-    h_eff_pt_L->Draw();
-    h_eff_pt_L->Write();
-    sprintf(ctxt,"p_{T} < 8 GeV");
-    mySmallText(0.45,0.5,1,ctxt);
-    c.SaveAs(DIR+type+"_eff_pt_L.eps");
-    c.SaveAs(DIR+type+"_eff_pt_L.png");
-    
+  h_eff_pt_L->Draw();
+  h_eff_pt_L->Write();
+  sprintf(ctxt,"p_{T} < 8 GeV");
+  mySmallText(0.45,0.5,1,ctxt);
+  c.SaveAs(DIR+type+"_eff_pt_L.pdf");
+  c.SaveAs(DIR+type+"_eff_pt_L.png");
+  
+  if (doDetailedPlots) {
     h_eff_pt_LC->Draw();
     h_eff_pt_LC->Write();
     sprintf(ctxt,"p_{T} < 8 GeV, |#eta|<1.0");
     mySmallText(0.45,0.5,1,ctxt);
-    c.SaveAs(DIR+type+"_eff_pt_LC.eps");
+    c.SaveAs(DIR+type+"_eff_pt_LC.pdf");
     c.SaveAs(DIR+type+"_eff_pt_LC.png");
-    
-    h_eff_pt_H->Draw();
-    h_eff_pt_H->Write();
-    sprintf(ctxt,"p_{T} > 8 GeV");
-    mySmallText(0.45,0.5,1,ctxt);
-    c.SaveAs(DIR+type+"_eff_pt_H.eps");
-    c.SaveAs(DIR+type+"_eff_pt_H.png");
-    //  }
-
+  }
+  h_eff_pt_H->Draw();
+  h_eff_pt_H->Write();
+  sprintf(ctxt,"p_{T} > 8 GeV");
+  mySmallText(0.45,0.5,1,ctxt);
+  c.SaveAs(DIR+type+"_eff_pt_H.pdf");
+  c.SaveAs(DIR+type+"_eff_pt_H.png");
+  
   h_eff_eta->Draw();
   h_eff_eta->Write();
-  c.SaveAs(DIR+type+"_eff_eta.eps");
+  c.SaveAs(DIR+type+"_eff_eta.pdf");
   c.SaveAs(DIR+type+"_eff_eta.png");
   
   if (type.Contains("Mu")) {
     h_eff_eta->GetYaxis()->SetRangeUser(0.8,1.01); // zoomed-in plot
-    c.SaveAs(DIR+type+"_eff_eta_zoom.eps");
+    c.SaveAs(DIR+type+"_eff_eta_zoom.pdf");
     c.SaveAs(DIR+type+"_eff_eta_zoom.png");
   }
 
+  h_eff_eta_L->Draw();
+  h_eff_eta_L->Write();
+  sprintf(ctxt,"p_{T} < 8 GeV");
+  mySmallText(0.45,0.5,1,ctxt);
+  c.SaveAs(DIR+type+"_eff_eta_L.pdf");
+  c.SaveAs(DIR+type+"_eff_eta_L.png");
+  
+  h_eff_eta_H->Draw();
+  h_eff_eta_H->Write();
+  sprintf(ctxt,"p_{T} > 8 GeV");
+  mySmallText(0.45,0.5,1,ctxt);
+  c.SaveAs(DIR+type+"_eff_eta_H.pdf");
+  c.SaveAs(DIR+type+"_eff_eta_H.png");
+  
   if (doDetailedPlots) {
-    h_eff_eta_L->Draw();
-    h_eff_eta_L->Write();
-    sprintf(ctxt,"p_{T} < 8 GeV");
+    h_eff_eta_23->Draw();
+    h_eff_eta_23->Write();
+    sprintf(ctxt,"2 < p_{T} < 3 GeV");
     mySmallText(0.45,0.5,1,ctxt);
-    c.SaveAs(DIR+type+"_eff_eta_L.eps");
-    c.SaveAs(DIR+type+"_eff_eta_L.png");
+    c.SaveAs(DIR+type+"_eff_eta_23.pdf");
+    c.SaveAs(DIR+type+"_eff_eta_23.png");
     
-    h_eff_eta_H->Draw();
-    h_eff_eta_H->Write();
-    sprintf(ctxt,"p_{T} > 8 GeV");
+    h_eff_eta_35->Draw();
+    h_eff_eta_35->Write();
+    sprintf(ctxt,"3 < p_{T} < 5 GeV");
     mySmallText(0.45,0.5,1,ctxt);
-    c.SaveAs(DIR+type+"_eff_eta_H.eps");
-    c.SaveAs(DIR+type+"_eff_eta_H.png");
+    c.SaveAs(DIR+type+"_eff_eta_35.pdf");
+    c.SaveAs(DIR+type+"_eff_eta_35.png");
     
+    h_eff_eta_5->Draw();
+    h_eff_eta_5->Write();
+    sprintf(ctxt,"p_{T} > 5 GeV");
+    mySmallText(0.45,0.5,1,ctxt);
+    c.SaveAs(DIR+type+"_eff_eta_5.pdf");
+    c.SaveAs(DIR+type+"_eff_eta_5.png");
+
     h_eff_z0->Draw();
     h_eff_z0->Write();
-    c.SaveAs(DIR+type+"_eff_z0.eps");
+    c.SaveAs(DIR+type+"_eff_z0.pdf");
     c.SaveAs(DIR+type+"_eff_z0.png");
 
     h_eff_z0_L->Write();
@@ -2237,21 +2369,26 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
 
     h_eff_phi->Draw();
     h_eff_phi->Write();
-    c.SaveAs(DIR+type+"_eff_phi.eps");
+    c.SaveAs(DIR+type+"_eff_phi.pdf");
     c.SaveAs(DIR+type+"_eff_phi.png");
     
     if (type.Contains("Mu")) {
       h_eff_phi->GetYaxis()->SetRangeUser(0.8,1.01); // zoomed-in plot
-      c.SaveAs(DIR+type+"_eff_phi_zoom.eps");
+      c.SaveAs(DIR+type+"_eff_phi_zoom.pdf");
       c.SaveAs(DIR+type+"_eff_phi_zoom.png");
     }
-    
+
     h_eff_d0->Draw();
     h_eff_d0->Write();
-    c.SaveAs(DIR+type+"_eff_d0.eps");
+    c.SaveAs(DIR+type+"_eff_d0.pdf");
     c.SaveAs(DIR+type+"_eff_d0.png");
+    
+    h_eff_absd0->Draw();
+    h_eff_absd0->Write();
+    c.SaveAs(DIR+type+"_eff_absd0.pdf");
+    c.SaveAs(DIR+type+"_eff_absd0.png");
   }
-  
+
   gPad->SetGridx(0);
   gPad->SetGridy(0);
 
@@ -2269,35 +2406,35 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     rms = h_res_pt->GetRMS();
     sprintf(ctxt,"RMS = %.4f",rms);
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_res_pt.eps");
+    c.SaveAs(DIR+type+"_res_pt.pdf");
     c.SaveAs(DIR+type+"_res_pt.png");
     
     h_res_ptRel->Draw();
     rms = h_res_ptRel->GetRMS();
     sprintf(ctxt,"RMS = %.4f",rms);	
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_res_ptRel.eps");
+    c.SaveAs(DIR+type+"_res_ptRel.pdf");
     c.SaveAs(DIR+type+"_res_ptRel.png");
 
     h_res_eta->Draw();
     rms = h_res_eta->GetRMS();
     sprintf(ctxt,"RMS = %.3e",rms);	
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_res_eta.eps");
+    c.SaveAs(DIR+type+"_res_eta.pdf");
     c.SaveAs(DIR+type+"_res_eta.png");
     
     h_res_phi->Draw();
     rms = h_res_phi->GetRMS();
     sprintf(ctxt,"RMS = %.3e",rms);	
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_res_phi.eps");
+    c.SaveAs(DIR+type+"_res_phi.pdf");
     c.SaveAs(DIR+type+"_res_phi.png");
     
     h_res_z0->Draw();
     rms = h_res_z0->GetRMS();
     sprintf(ctxt,"RMS = %.4f",rms);	
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0.eps");
+    c.SaveAs(DIR+type+"_res_z0.pdf");
     c.SaveAs(DIR+type+"_res_z0.png");
     
     h_res_z0_C->Draw();
@@ -2306,7 +2443,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"|eta| < 0.8");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_C.eps");
+    c.SaveAs(DIR+type+"_res_z0_C.pdf");
     c.SaveAs(DIR+type+"_res_z0_C.png");
     
     h_res_z0_I->Draw();
@@ -2315,7 +2452,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"0.8 < |eta| < 1.6");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_I.eps");
+    c.SaveAs(DIR+type+"_res_z0_I.pdf");
     c.SaveAs(DIR+type+"_res_z0_I.png");
     
     h_res_z0_F->Draw();
@@ -2324,7 +2461,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"|eta| > 1.6");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_F.eps");
+    c.SaveAs(DIR+type+"_res_z0_F.pdf");
     c.SaveAs(DIR+type+"_res_z0_F.png");
 
     h_res_z0_C_L->Draw();
@@ -2334,7 +2471,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"|eta| < 0.8");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_C_L.eps");
+    c.SaveAs(DIR+type+"_res_z0_C_L.pdf");
     c.SaveAs(DIR+type+"_res_z0_C_L.png");
     
     h_res_z0_I_L->Draw();
@@ -2344,7 +2481,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"0.8 < |eta| < 1.6");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_I_L.eps");
+    c.SaveAs(DIR+type+"_res_z0_I_L.pdf");
     c.SaveAs(DIR+type+"_res_z0_I_L.png");
     
     h_res_z0_F_L->Draw();
@@ -2354,7 +2491,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"|eta| > 1.6");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_F_L.eps");
+    c.SaveAs(DIR+type+"_res_z0_F_L.pdf");
     c.SaveAs(DIR+type+"_res_z0_F_L.png");
 
     h_res_z0_C_H->Draw();
@@ -2364,7 +2501,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"|eta| < 0.8");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_C_H.eps");
+    c.SaveAs(DIR+type+"_res_z0_C_H.pdf");
     c.SaveAs(DIR+type+"_res_z0_C_H.png");
     
     h_res_z0_I_H->Draw();
@@ -2374,7 +2511,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"0.8 < |eta| < 1.6");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_I_H.eps");
+    c.SaveAs(DIR+type+"_res_z0_I_H.pdf");
     c.SaveAs(DIR+type+"_res_z0_I_H.png");
     
     h_res_z0_F_H->Draw();
@@ -2384,7 +2521,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"|eta| > 1.6");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_F_H.eps");
+    c.SaveAs(DIR+type+"_res_z0_F_H.pdf");
     c.SaveAs(DIR+type+"_res_z0_F_H.png");
 
     h_res_z0_L->Draw();
@@ -2394,7 +2531,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"p_{T} < 5 GeV");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_L.eps");
+    c.SaveAs(DIR+type+"_res_z0_L.pdf");
     c.SaveAs(DIR+type+"_res_z0_L.png");
     
     h_res_z0_H->Draw();
@@ -2404,7 +2541,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"p_{T} > 15 GeV");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_H.eps");
+    c.SaveAs(DIR+type+"_res_z0_H.pdf");
     c.SaveAs(DIR+type+"_res_z0_H.png");
 
     if (h_res_d0->GetEntries()>0) {
@@ -2412,7 +2549,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       rms = h_res_d0->GetRMS();
       sprintf(ctxt,"RMS = %.4f",rms);	
       mySmallText(0.22,0.82,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0.eps");
+      c.SaveAs(DIR+type+"_res_d0.pdf");
       c.SaveAs(DIR+type+"_res_d0.png");
 
       h_res_d0_C->Draw();
@@ -2422,7 +2559,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"|eta| < 0.8");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_C.eps");
+      c.SaveAs(DIR+type+"_res_d0_C.pdf");
       c.SaveAs(DIR+type+"_res_d0_C.png");
     
       h_res_d0_I->Draw();
@@ -2432,7 +2569,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"0.8 < |eta| < 1.6");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_I.eps");
+      c.SaveAs(DIR+type+"_res_d0_I.pdf");
       c.SaveAs(DIR+type+"_res_d0_I.png");
     
       h_res_d0_F->Draw();
@@ -2442,7 +2579,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"|eta| > 1.6");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_F.eps");
+      c.SaveAs(DIR+type+"_res_d0_F.pdf");
       c.SaveAs(DIR+type+"_res_d0_F.png");
     
       h_res_d0_C_L->Draw();
@@ -2452,7 +2589,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"|eta| < 0.8");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_C_L.eps");
+      c.SaveAs(DIR+type+"_res_d0_C_L.pdf");
       c.SaveAs(DIR+type+"_res_d0_C_L.png");
     
       h_res_d0_I_L->Draw();
@@ -2462,7 +2599,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"0.8 < |eta| < 1.6");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_I_L.eps");
+      c.SaveAs(DIR+type+"_res_d0_I_L.pdf");
       c.SaveAs(DIR+type+"_res_d0_I_L.png");
     
       h_res_d0_F_L->Draw();
@@ -2472,7 +2609,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"|eta| > 1.6");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_F_L.eps");
+      c.SaveAs(DIR+type+"_res_d0_F_L.pdf");
       c.SaveAs(DIR+type+"_res_d0_F_L.png");
       
       h_res_d0_C_H->Draw();
@@ -2482,7 +2619,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"|eta| < 0.8");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_C_H.eps");
+      c.SaveAs(DIR+type+"_res_d0_C_H.pdf");
       c.SaveAs(DIR+type+"_res_d0_C_H.png");
     
       h_res_d0_I_H->Draw();
@@ -2492,7 +2629,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"0.8 < |eta| < 1.6");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_I_H.eps");
+      c.SaveAs(DIR+type+"_res_d0_I_H.pdf");
       c.SaveAs(DIR+type+"_res_d0_I_H.png");
       
       h_res_d0_F_H->Draw();
@@ -2502,7 +2639,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"|eta| > 1.6");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_F_H.eps");
+      c.SaveAs(DIR+type+"_res_d0_F_H.pdf");
       c.SaveAs(DIR+type+"_res_d0_F_H.png");
       
       h_res_d0_L->Draw();
@@ -2512,7 +2649,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"p_{T} < 5 GeV");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_L.eps");
+      c.SaveAs(DIR+type+"_res_d0_L.pdf");
       c.SaveAs(DIR+type+"_res_d0_L.png");
       
       h_res_d0_H->Draw();
@@ -2522,7 +2659,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"p_{T} > 15 GeV");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_H.eps");
+      c.SaveAs(DIR+type+"_res_d0_H.pdf");
       c.SaveAs(DIR+type+"_res_d0_H.png");
     }
   }
@@ -2559,7 +2696,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
 
   if (doDetailedPlots) {
     c.SaveAs(DIR+type+"_trackrate_vspt.png");
-    c.SaveAs(DIR+type+"_trackrate_vspt.eps");
+    c.SaveAs(DIR+type+"_trackrate_vspt.pdf");
   }
 
   // ---------------------------------------------------------------------------------------------------------
@@ -2591,35 +2728,41 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     
     h_frac_sumpt_vspt->Draw();
     c.SaveAs(DIR+type+"_sumpt_vspt.png"); 
-    c.SaveAs(DIR+type+"_sumpt_vspt.eps"); 
+    c.SaveAs(DIR+type+"_sumpt_vspt.pdf"); 
     
     h_frac_sumpt_vseta->Draw();
     c.SaveAs(DIR+type+"_sumpt_vseta.png"); 
-    c.SaveAs(DIR+type+"_sumpt_vseta.eps"); 
+    c.SaveAs(DIR+type+"_sumpt_vseta.pdf"); 
     
     h_matchfrac_sumpt_vspt->Draw();
     c.SaveAs(DIR+type+"_sumpt_match_vspt.png"); 
-    c.SaveAs(DIR+type+"_sumpt_match_vspt.eps"); 
+    c.SaveAs(DIR+type+"_sumpt_match_vspt.pdf"); 
     
     h_matchfrac_sumpt_vseta->Draw();
     c.SaveAs(DIR+type+"_sumpt_match_vseta.png"); 
-    c.SaveAs(DIR+type+"_sumpt_match_vseta.eps"); 
+    c.SaveAs(DIR+type+"_sumpt_match_vseta.pdf"); 
   }
   */
 
 
   // nbr tracks per event 
 
+  h_ntrk_pt2->Write();
+  h_ntrk_pt3->Write();
+  h_ntrk_pt10->Write();
+    
   if (doDetailedPlots) {
+    h_ntrk_pt2->Draw();
+    c.SaveAs(DIR+type+"_trackrate_pt2_perevt.png");
+    c.SaveAs(DIR+type+"_trackrate_pt2_perevt.pdf");
+    
     h_ntrk_pt3->Draw();
-    h_ntrk_pt3->Write();
     c.SaveAs(DIR+type+"_trackrate_pt3_perevt.png");
-    c.SaveAs(DIR+type+"_trackrate_pt3_perevt.eps");
+    c.SaveAs(DIR+type+"_trackrate_pt3_perevt.pdf");
     
     h_ntrk_pt10->Draw();
-    h_ntrk_pt10->Write();
     c.SaveAs(DIR+type+"_trackrate_pt10_perevt.png");
-    c.SaveAs(DIR+type+"_trackrate_pt10_perevt.eps");
+    c.SaveAs(DIR+type+"_trackrate_pt10_perevt.pdf");
   }
 
   fout->Close();
@@ -2787,6 +2930,7 @@ void makeResidualIntervalPlot( TString type, TString dir, TString variable, TH1F
   l->Draw();  
 
   c.SaveAs(dir+type+"_"+variable+"_interval.png");
+  c.SaveAs(dir+type+"_"+variable+"_interval.pdf");
 
   delete l;
 }

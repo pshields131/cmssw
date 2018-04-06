@@ -204,9 +204,20 @@ public:
     int flip=1;
     if (isFlipped()) flip=-1;
     if (z_>0.0) {
-      return ((int)strip_-480.5)*0.009*flip/r2();
+      return ((int)strip_-509.5)*0.009*flip/r2();
     }
-    return -((int)strip_-480.5)*0.009*flip/r2();
+    return -((int)strip_-509.5)*0.009*flip/r2();
+  }
+
+  //Scalled to go between -1 and +1
+  double alphanew() const {
+    if (isPSmodule()) return 0.0;
+    int flip=1;
+    if (isFlipped()) flip=-1;
+    if (z_>0.0) {
+      return ((int)strip_-509.5)*flip/510.0;
+    }
+    return -((int)strip_-509.5)*flip/510.0;
   }
 
   double alphatruncated() const {
@@ -216,9 +227,9 @@ public:
     int striptruncated=strip_/1;
     striptruncated*=1;
     if (z_>0.0) {
-      return (striptruncated-480.5)*0.009*flip/r2();
+      return (striptruncated-509.5)*0.009*flip/r2();
     }
-    return -(striptruncated-480.5)*0.009*flip/r2();
+    return -(striptruncated-509.5)*0.009*flip/r2();
   }
 
   void setXY(double x, double y){

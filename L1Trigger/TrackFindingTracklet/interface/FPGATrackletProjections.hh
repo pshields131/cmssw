@@ -72,6 +72,14 @@ public:
     if (layer_==0&&disk_!=0) assert(tracklet->validProjDisk(disk_));
     if (layer_!=0&&disk_!=0) assert(tracklet->validProj(layer_)||
 				    tracklet->validProjDisk(disk_));
+
+    for(unsigned int i=0;i<tracklets_.size();i++) {
+      if (tracklets_[i]==tracklet){
+	cout << "Adding same tracklet "<<tracklet<<" twice in "<<getName()<<endl;
+      }
+      assert(tracklets_[i]!=tracklet);
+    }
+    
     tracklets_.push_back(tracklet);
   }
 

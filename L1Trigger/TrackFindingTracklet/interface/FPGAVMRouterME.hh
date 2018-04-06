@@ -84,9 +84,6 @@ public:
 
   void execute(){
 
-    //only one of these can be filled!
-    assert(stubinputsdisk_.size()*stubinputs_.size()==0);
-
     unsigned int count=0;
 
     if (stubinputs_.size()!=0){
@@ -98,12 +95,13 @@ public:
 
 	  int iphiRaw=stub.first->iphivmRaw();
 
-	  int layer=stub.first->layer().value()+1;
+	  //int layer=stub.first->layer().value()+1;
 
-	  bool evenlayer=(layer==2)||(layer==4)||(layer==6);
+	  //bool evenlayer=(layer==2)||(layer==4)||(layer==6);
 
-	  if (evenlayer&&(iphiRaw<4)) continue;
-	  if (evenlayer&&(iphiRaw>27)) continue;
+	  //if (evenlayer&&(iphiRaw<4)) continue;
+	  //if (evenlayer&&(iphiRaw>27)) continue;
+	  assert(iphiRaw>=4 and iphiRaw<=27);
 	  
 	  int iphiRawPlus=stub.first->iphivmRawPlus();
 	  int iphiRawMinus=stub.first->iphivmRawMinus();
@@ -177,57 +175,6 @@ public:
       }
 
     }
-    if (stubinputsdisk_.size()>0) {
-      assert(0); //should never get here
-      //cout << "Routing stubs in disk" <<endl;
-      for(unsigned int j=0;j<stubinputsdisk_.size();j++){
-	for(unsigned int i=0;i<stubinputsdisk_[j]->nStubs();i++){
-	  //cout << "Found stub in disk in "<<getName()<<endl;
-	  std::pair<FPGAStub*,L1TStub*> stub=stubinputsdisk_[j]->getStub(i);
-	  //
-          bool isSS = name_[7] == '6' || name_[7] == '8';
-          if(isSS && stub.second->isPSmodule()) {
-            cout<<"in SS router "<<name_<<" but r = "<<stub.second->r()<<"\n";
-            assert(0);
-          }
-          if(!isSS && !stub.second->isPSmodule()) {
-            cout<<"in PS router "<<name_<<" but r = "<<stub.second->r()<<"\n";
-            assert(0);
-          }
-	  //FIXME Next few lines should be member data in FPGAStub...
-	  int irtmp=stub.first->r().value(); 
-	  int ir;
-	  if(!stub.second->isPSmodule()){//SS module, r encoded differently
-	    ir=2+(irtmp>>3);
-	    //cout<<"That's SS module! "<<stub.second->r()<<": "<<irtmp<<" with "<<stub.first->r().nbits()<<"\n";
-	  }
-	  else {
-	    ir=irtmp>>(stub.first->r().nbits()-2);
-	  }
-	  int iphitmp=stub.first->phi().value();
-	  int disk=stub.first->disk().value();
-	  if ((disk%2)==0) iphitmp-=(1<<(stub.first->phi().nbits()-3));  
-	  assert(iphitmp>=0);
-	  int iphi=iphitmp>>(stub.first->phi().nbits()-2);
-
-	  //cout << "iphi ir irtmp: "<<iphi<<" "<<ir<<"\t"<<irtmp<<"\t ("<<stub.second->r()<<")"<<endl;
-	  assert(ir>=0);
-	  assert(ir<=3);
-	  ir=ir%2;
-	  assert(iphi>=0);
-	  assert(iphi<=3);
-
-	  stub.first->setAllStubIndex(allstubs_[0]->nStubs());
-	  stub.second->setAllStubIndex(allstubs_[0]->nStubs());
-	  
-	  for (unsigned int l=0;l<allstubs_.size();l++){
-	    allstubs_[l]->addStub(stub);
-	  }
-
-	}
-      }
-    }
-
 
     if (writeAllStubs) {
       static ofstream out("allstubsme.txt");
@@ -242,7 +189,6 @@ public:
 private:
 
   vector<FPGAInputLink*> stubinputs_;
-  vector<FPGAStubDisk*> stubinputsdisk_;
   vector<FPGAAllStubs*> allstubs_;
 
   vector<FPGAVMStubsME*> vmstubsPHI_[24];

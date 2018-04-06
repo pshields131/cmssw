@@ -21,21 +21,11 @@ public:
     if (subname=="L4") layer_=4;
     if (subname=="L5") layer_=5;
     if (subname=="L6") layer_=6;
-    if (subname=="F1") disk_=1;
-    if (subname=="F2") disk_=2;
-    if (subname=="F3") disk_=3;
-    if (subname=="F4") disk_=4;
-    if (subname=="F5") disk_=5;
     if (subname=="D1") disk_=1;
     if (subname=="D2") disk_=2;
     if (subname=="D3") disk_=3;
     if (subname=="D4") disk_=4;
     if (subname=="D5") disk_=5;
-    if (subname=="B1") disk_=-1;
-    if (subname=="B2") disk_=-2;
-    if (subname=="B3") disk_=-3;
-    if (subname=="B4") disk_=-4;
-    if (subname=="B5") disk_=-5;
     if (layer_==0&&disk_==0) {
       cout << name<<" subname = "<<subname<<" "<<layer_<<" "<<disk_<<endl;
     }
@@ -87,6 +77,10 @@ public:
     for(unsigned int j=0;j<vmprojs_->nTracklets();j++){
       FPGATracklet* proj=vmprojs_->getFPGATracklet(j);
 
+      if (debug1) {
+	cout << "Found projection in "<<getName()<<endl;
+      }
+
      	
 	if (layer_>0){
 
@@ -102,32 +96,29 @@ public:
 	      if (debug1) {
 		cout << "Found stub in "<<getName()<<endl;
 	      }
-	      std::pair<FPGAStub*,L1TStub*> stub=vmstubs_->getStubBin(ibin,i);   
-	
+	      std::pair<FPGAStub*,L1TStub*> stub=vmstubs_->getStubBin(ibin,i);
 	      countall++;
 
-	      /*This here is old debugging code keep here commented out if needed AR
-	      if (doMEMatch){
-		double zcut=10.0;
-		if (layer_==1&&proj->layer()==5) zcut=20;
-		if (layer_==1&&abs(proj->disk())==3) zcut=20;
-		if (fabs(proj->zproj(layer_)-stub.second->z())>zcut) continue;
-		double dphi=proj->phiproj(layer_)-stub.second->phi();
-		double deltaphi=two_pi/NSector;
-		dphi-=deltaphi/6.0;
-		do {
-		  if (dphi>0.5*deltaphi) dphi-=deltaphi;
-		  if (dphi<-0.5*deltaphi) dphi+=deltaphi;
-		}while (abs(dphi)>=0.5*deltaphi);
-		//cout << "layer_ dphi r*dphi "<<layer_<<" "<<dphi<<" "
-		//	   << dphi*stub.second->r() << endl;
-		if (layer_==1&&abs(dphi*stub.second->r())>0.12) continue;
-		if (layer_==2&&abs(dphi*stub.second->r())>0.15) continue;
-		if (layer_==3&&abs(dphi*stub.second->r())>0.25) continue;
-		if (abs(stub.first->phivm().value()-
-			stub.first->phivm().value())>1) continue;
-	      } // if (doMEMatch)
-	      */
+	      double projbend=bend(rmean[layer_-1],proj->rinv());
+              double stubbend=0.5*(stub.first->bend().value()-15.0);
+	      
+	      //cout << "Bend : "<<projbend<<" "<<stubbend<<endl;
+
+	      double dz=proj->zproj(layer_)-stub.second->z();
+	      //cout << "zproj zstub seedlayer : "<<proj->zproj(layer_)<<" "<<stub.second->z()<<" "<<proj->layer()<<endl;
+
+	      if (proj->layer()==1) {
+		if (fabs(dz)>4.0) continue;
+	      } else {
+		if (fabs(dz)>15.0) continue;
+	      }
+	      
+	      if (fabs(projbend-stubbend)>1.25) continue;
+	      
+	      if (debug1) {
+		cout << "Adding match in "<<getName()<<endl;
+	      }
+
 	      countpass++;
 	      candmatches_->addMatch(proj,stub);
 	      if (countall>=MAXME) break;
@@ -136,12 +127,62 @@ public:
 	} // if (layer_>0)      
 	else if (disk_!=0) {
 
+	  unsigned int irproj=proj->fpgarprojdisk(disk_).value();
+
+	  unsigned int bin=3;
+	  if (irproj<50.0/krprojshiftdisk) bin=2;
+	  if (irproj<35.0/krprojshiftdisk) bin=1;
+	  if (irproj<26.0/krprojshiftdisk) bin=0;
+	  if (proj->fpgat().value()<0) bin+=4;
+
+	  for (unsigned int ibin=bin;ibin<=bin;ibin++) {
+
+	    unsigned int nstub=vmstubs_->nStubsBin(ibin);
+	    
+	    for(unsigned int i=0;i<nstub;i++){
+	      if (debug1) {
+		cout << "Found stub in "<<getName()<<endl;
+	      }
+	      std::pair<FPGAStub*,L1TStub*> stub=vmstubs_->getStubBin(ibin,i);
+	      countall++;
+
+	      double dr=stub.second->r()-proj->rprojdisk(disk_);
+	      //cout << " r of stub proj dr : "<<stub.second->r()<<" "<<proj->rprojdisk(disk_)<<" "<<dr<<endl;
+
+	      //double drphi=stub.second->r()*(stub.first->phi().value()-proj->fpgaphiprojdisk(disk_).value())*kphiproj123;
+	      //cout << " phi of stub proj drphi : "<<stub.first->phi().value()*kphiproj123<<" "<<proj->fpgaphiprojdisk(disk_).value()*kphiproj123<<" "<<drphi<<endl;
+
+	      double bendproj=0.5*bend(stub.second->r(),proj->rinv());
+	      //if (proj->t()<0.0) bendproj=-bendproj;
+	      
+	      //cout << "bend "<<0.5*(stub.first->bend().value()-15.0)<<" "<<bendproj<<endl;
+
+	      double deltabend=0.5*(stub.first->bend().value()-15.0)-bendproj;
+
+	      if (fabs(deltabend)>1.5) continue;
+	      
+	      if (stub.first->isPSmodule()){
+	      	if (fabs(dr)>1.0) continue;
+	      } else {
+	      	if (fabs(dr)>6.0) continue;
+	      }
+
+	      
+	      countpass++;
+	      candmatches_->addMatch(proj,stub);
+	      if (countall>=MAXME) break;
+	      
+	    }
+	  }
+
+	  /*
+	      
 	  for(unsigned int i=0;i<vmstubs_->nStubs();i++){
 	    if (debug1) {
 	      cout << "Found stub in "<<getName()<<endl;
 	    }
 	    std::pair<FPGAStub*,L1TStub*> stub=vmstubs_->getStub(i);   
-	    
+
 	    
 	    int disk=disk_;
 	    if (proj->t()<0.0) disk=-disk_;
@@ -177,6 +218,7 @@ public:
 	    candmatches_->addMatch(proj,stub);
 	    if (countall>=MAXME) break;
 	  }
+	  */
 	} else { // if (layer_>0)
 	  assert(0);
 	} // if (layer_>0)
@@ -191,7 +233,20 @@ public:
 
   } // execute()
 
+  double bend(double r, double rinv) {
 
+    double dr=0.18;
+    
+    double delta=r*dr*0.5*rinv;
+
+    double bend=-delta/0.009;
+    if (r<55.0) bend=-delta/0.01;
+
+    return bend;
+    
+  }
+
+  
 private:
 
   FPGAVMStubsME* vmstubs_;

@@ -27,21 +27,21 @@ public:
     if (subname=="L4") layer_=4;
     if (subname=="L5") layer_=5;
     if (subname=="L6") layer_=6;
-    if (subname=="F1") disk_=1;
-    if (subname=="F2") disk_=2;
-    if (subname=="F3") disk_=3;
-    if (subname=="F4") disk_=4;
-    if (subname=="F5") disk_=5;
+    //if (subname=="F1") disk_=1;
+    //if (subname=="F2") disk_=2;
+    //if (subname=="F3") disk_=3;
+    //if (subname=="F4") disk_=4;
+    //if (subname=="F5") disk_=5;
     if (subname=="D1") disk_=1;
     if (subname=="D2") disk_=2;
     if (subname=="D3") disk_=3;
     if (subname=="D4") disk_=4;
     if (subname=="D5") disk_=5;
-    if (subname=="B1") disk_=-1;
-    if (subname=="B2") disk_=-2;
-    if (subname=="B3") disk_=-3;
-    if (subname=="B4") disk_=-4;
-    if (subname=="B5") disk_=-5;
+    //if (subname=="B1") disk_=-1;
+    //if (subname=="B2") disk_=-2;
+    //if (subname=="B3") disk_=-3;
+    //if (subname=="B4") disk_=-4;
+    //if (subname=="B5") disk_=-5;
     if (layer_==0&&disk_==0) {
       cout << name<<" subname = "<<subname<<" "<<layer_<<" "<<disk_<<endl;
     }   
@@ -50,7 +50,19 @@ public:
 
   void addMatch(FPGATracklet* tracklet,std::pair<FPGAStub*,L1TStub*> stub) {
     std::pair<FPGATracklet*,std::pair<FPGAStub*,L1TStub*> > tmp(tracklet,stub);
-    matches_.push_back(tmp);
+
+    //Check for consistency
+    for(unsigned int i=0;i<matches_.size();i++){
+      if (tracklet->homeSector()==matches_[i].first->homeSector()) {
+	if (tracklet->TCID()<matches_[i].first->TCID()) {
+	  cout << "In "<<getName()<<" adding tracklet "<<tracklet<<" with lower TCID : "
+	       <<tracklet->TCID()<<" than earlier TCID "<<matches_[i].first->TCID()<<endl;
+	  assert(0);
+	}
+      }
+    }
+    
+    matches_.push_back(tmp);    
   }
 
   unsigned int nMatches() const {return matches_.size();}

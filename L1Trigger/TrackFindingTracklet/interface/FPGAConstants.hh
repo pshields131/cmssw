@@ -14,8 +14,6 @@ static string geomext="new";  //Use full
 
 static int TMUX = 6;
 
-static bool flatgeom=false;
-
 static string fitpatternfile="fitpattern.txt";
 
 //If this string is non-empty we will write ascii file with
@@ -52,34 +50,45 @@ static bool writeTrackProj=false;
 static bool writeTrackProjOcc=false;
 static bool writeME=false;
 static bool writeMatchCalculator=false;
+static bool writeResiduals=false;
 static bool writeProjectionTransceiver=false;
 static bool writeMatchTransceiver=false;
 static bool writeFitTrack=false;
+static bool writeChiSq=false;
 static bool writeNMatches=false;
 static bool writez0andrinv=false;
 static bool writeDiskMatch1=false;
 static bool writeHitEff=false;
-static bool writeTEBinTable=false;
+
+static bool writeTETables=false;
+static bool writeVMTables=false;
 
 
 static bool writeHitPattern=false;
 static bool writeTrackletParsOverlap=false;
 static bool writeTrackletParsDisk=false;
 
+static bool writeAllCT=false; //write out .dat file containing all output tracks in bitwise format
 
 static bool writeResEff=false; //write files for making resolution & efficiency plots for standable code version
+static bool writePars=false; //write files for making plots of track parameters
 
 
 
 static bool writestubs=false;
 static bool writestubs_in2=false;
 static bool writeifit=false;
-static bool padding=false;
+static bool padding=true;
 
 static bool exactderivatives=false;  //for both the integer and float
 static bool exactderivativesforfloating=true; //only for the floating point
+static bool useapprox=true; //use approximate postion based on integer representation for floating point
+static double alphamax=5.0/(65.0*65.0);
+static int nbitsalpha=6;
+static double kalpha=alphamax/(1<<(nbitsalpha-1));
+static int alphaBitsTable=2; //For number of bits in track derivative table
+static int nrinvBitsTable=3; //number of bits for tabulating rinv dependence
 
-static double errfac=1.0;
 static bool writetrace=false; //Print out details about startup
 static bool debug1=false; //Print information about tracking
 static bool writeoutReal = false; 
@@ -111,33 +120,36 @@ static const int MEBinsBits=3;
 static const int MEBins=(1<<MEBinsBits);
 
 //Geometry
-static double zlength=flatgeom?115.0:120.0;
+static double zlength=120.0;
 
 // can automatically determine the above values using script plotstub.cc:
 // root -b -q 'plotstub.cc("evlist_MuPlus_1to10_D11_PU0")'
 
 // these assume D11 geometry!
-static double rmeanL1=flatgeom?22.8268:25.1493;
-static double rmeanL2=flatgeom?35.6324:37.468;
-static double rmeanL3=flatgeom?50.6508:52.5977;
-static double rmeanL4=flatgeom?68.3849:68.7737;
-static double rmeanL5=flatgeom?88.5582:86.0591;
-static double rmeanL6=flatgeom?107.758:110.844;
+static double rmeanL1=25.1493;
+static double rmeanL2=37.468;
+static double rmeanL3=52.5977;
+static double rmeanL4=68.7737;
+static double rmeanL5=86.0591;
+static double rmeanL6=110.844;
 
-static double zmeanD1=flatgeom?131.454:131.18;
-static double zmeanD2=flatgeom?156.255:155;
-static double zmeanD3=flatgeom?185.614:185.34;
-static double zmeanD4=flatgeom?220.368:221.619;
-static double zmeanD5=flatgeom?261.51:265;
+static double zmeanD1=131.18;
+static double zmeanD2=155.0;
+static double zmeanD3=185.34;
+static double zmeanD4=221.619;
+static double zmeanD5=265.0;
 
 
 //now the half-way between rmindisk and rmaxdisk corresponds to PS/SS boundary 
-static double rmindisk=flatgeom?12.0:0.0;
-static double rmaxdisk=flatgeom?108.0:120.0;
+static double rmindisk=0.0;
+static double rmaxdisk=120.0;
 
-//lookup values for SS modules
-//static double rDSS[16]={flatgeom?62.63:60.92, flatgeom?67.65:65.93, flatgeom?69.61:68.25, flatgeom?74.63:73.30, flatgeom?80.14:78.52, flatgeom?85.16:83.60, 0., 0.,
-//                        flatgeom?86.37:85.29, flatgeom?91.40:90.31, flatgeom?97.00:95.73, flatgeom?102.0:100.766, flatgeom?102.5:101.97, flatgeom?107.5:106.99, 0., 0.};
+static double rmindiskvm=27.0;
+static double rmaxdiskvm=67.0;
+
+static double rmaxdiskl1overlapvm=45.0;
+static double rmindiskl2overlapvm=40.0;
+
 
 // need separate lookup values for inner two vs outer three disks for 2S modules
 // these assume D11 geometry!
@@ -182,25 +194,17 @@ static double zminD5=zmeanD5-dzmax;
 static double zmaxD5=zmeanD5+dzmax; 
 
 
-
-
-
-static double ptstubconsistencymatching=10.4;
-static double ptstubconsistencydiskmatching=10.0;
-static double teptconsistency=1000.5;
-static double teptconsistencydisk=1000.5;
-static double teptconsistencyoverlap=1000.5;
 static bool   enstubbend = false; 
 static double two_pi=8.0*atan(1.0);
 
-static double ptcut=2.0; //Minimum pt
+static double ptcut=1.91; //Minimum pt
 static double rinvcut=0.01*0.3*3.8/ptcut; //0.01 to convert to cm-1
+static double ptcutte=1.6; //Minimum pt in TE
+static double rinvcutte=0.01*0.3*3.8/ptcutte; //0.01 to convert to cm-1 in TE
+static double bendcut=1.5;
+static double bendcutdisk=3.0;
 static double z0cut=15.0;
 
-static double alphamax=5.0/(65.0*65.0);
-static int nbitsalpha=6;
-static double kalpha=alphamax/(1<<(nbitsalpha-1));
-static int alphaBitsTable=1; //For number of bits in track derivative table
 
 static unsigned int NSector=27; 
 static int Nphibits=2;         //Number of bits required to label the phi VM
@@ -228,18 +232,19 @@ static const double routerPSdisk=65.0;
 //limits per FED region
 //static int NMAXstub  = 250;
 //static int NMAXroute = 250;
-
+/*
 static unsigned int MAXSTUBSLINK = 10000; //Max stubs per link
 static unsigned int MAXLAYERROUTER = 10000; //Max stubs handled by layer router
 static unsigned int MAXDISKROUTER = 10000; //Max stubs handled by disk router
 static unsigned int MAXVMROUTER = 10000; //Max stubs handled by VM router
 static unsigned int MAXTE = 10000; //Maximum number of stub pairs to try in TE 
 static unsigned int MAXTC = 64; //64 //Maximum number of tracklet parameter calculations
-//static unsigned int MAXPROJECTIONTRANSCEIVER = 10000; //Maximum number of projections to neighbor
+static unsigned int MAXPROJECTIONTRANSCEIVER = 10000; //Maximum number of projections to neighbor
 static unsigned int MAXPROJROUTER = 10000; //Maximum number of projections to route
 static unsigned int MAXME = 10000; //Maximum number of stub-projection matches to try
 static unsigned int MAXMC = 10000; //Maximum number of match calculations
 static unsigned int MAXFIT = 10000; //Maximum number of track fits
+*/
 /*
 static unsigned int MAXSTUBSLINK = 33; //Max stubs per link
 static unsigned int MAXLAYERROUTER = 33; //Max stubs handled by layer router
@@ -253,6 +258,21 @@ static unsigned int MAXME = 34; //Maximum number of stub-projection matches to t
 static unsigned int MAXMC = 30; //Maximum number of match calculations
 static unsigned int MAXFIT = 10000; //Maximum number of track fits
 */
+static unsigned int MAXOFFSET=10000; //set to 0 for regular truncation
+
+static unsigned int MAXSTUBSLINK = 36 + MAXOFFSET; //Max stubs per link
+static unsigned int MAXLAYERROUTER = 36 + MAXOFFSET; //Max stubs handled by layer router
+static unsigned int MAXDISKROUTER = 36 + MAXOFFSET; //Max stubs handled by disk router
+static unsigned int MAXVMROUTER = 36 + MAXOFFSET; //Max stubs handled by VM router
+static unsigned int MAXTE = 36 + MAXOFFSET; //Maximum number of stub pairs to try in TE 
+static unsigned int MAXTC = 36 + MAXOFFSET; //Maximum number of tracklet parameter calculations
+//static unsigned int MAXPROJECTIONTRANSCEIVER = 10000; //Maximum number of projections to neighbor
+static unsigned int MAXPROJROUTER = 36 + MAXOFFSET; //Maximum number of projections to route
+static unsigned int MAXME = 36 + MAXOFFSET; //Maximum number of stub-projection matches to try
+static unsigned int MAXMC = 36 + MAXOFFSET; //Maximum number of match calculations
+static unsigned int MAXFIT = 36 + MAXOFFSET; //Maximum number of track fits
+
+
 static double dphisector=two_pi/NSector;
 
 //Constants for defining stub representations
@@ -372,14 +392,14 @@ static int it7tmpfactordisk=(1<<(it7tmpbitsdisk-idrinvbits+irinvshiftdisk))*kphi
 static double kt9disk=1.0/(1<<(2*it7tmpbitsdisk-2*it7tmpshiftdisk-2*it7shiftdisk)); 
 
 
-static int rinvbitshift=(int)(1.0+log((maxrinv/(1<<(nbitsrinv-1)))/krinv)/log(2.0));
-static int phi0bitshift=(int)(1.0+log((maxphi0/(1<<(nbitsphi0-1)))/kphi1)/log(2.0));
-static int tbitshift=(int)(1.0+log((maxt/(1<<(nbitst-1)))/kt)/log(2.0));
-static int z0bitshift=(int)(1.0+log((maxz0/(1<<(nbitsz0-1)))/kz)/log(2.0));
+static int rinvbitshift=13; //(int)(1.0+log((maxrinv/(1<<(nbitsrinv-1)))/krinv)/log(2.0));
+static int phi0bitshift=1; //(int)(1.0+log((maxphi0/(1<<(nbitsphi0-1)))/kphi1)/log(2.0));
+static int tbitshift=9; //(int)(1.0+log((maxt/(1<<(nbitst-1)))/kt)/log(2.0));
+static int z0bitshift=0; //(int)(1.0+log((maxz0/(1<<(nbitsz0-1)))/kz)/log(2.0));
 
 
-static int rinvbitshiftdisk=(int)(1.0+log((maxrinv/(1<<(nbitsrinv-1)))/krinvdisk)/log(2.0));
-static int phi0bitshiftdisk=(int)(1.0+log((maxphi0/(1<<(nbitsphi0-1)))/kphi1)/log(2.0));
+static int rinvbitshiftdisk=13; //(int)(1.0+log((maxrinv/(1<<(nbitsrinv-1)))/krinvdisk)/log(2.0));
+static int phi0bitshiftdisk=1; //(int)(1.0+log((maxphi0/(1<<(nbitsphi0-1)))/kphi1)/log(2.0));
 
 
 static double krinvpars=krinv*(1<<rinvbitshift);
@@ -449,14 +469,19 @@ static int rresidbits=7;
 
 
 //Trackfit
-static int fitrinvbitshift=10;  //6 OK?
+static int fitrinvbitshift=9;  //6 OK?
 static int fitphi0bitshift=6;  //4 OK?
-static int fittbitshift=6;     //4 OK?
+static int fittbitshift=10;     //4 OK? //lower number gives rounding problems
 static int fitz0bitshift=8;    //6 OK?
+
+static int chisqphifactbits=14;
+static int chisqzfactbits=14;
 
 //Duplicate Removal
 static int minIndStubs=3;
-static bool AdjacentRemoval=false;
+static bool AdjacentRemoval=true;
+static string RemovalType="ichi";
+//"ichi" (pairwise, keep track with best ichisq), "nstub" (pairwise, keep track with more stubs), "grid" (TMTT-like removal)
 
 #endif
 

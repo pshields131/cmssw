@@ -31,6 +31,12 @@ public:
     double ptinv=1.0/stub.pt();
     double sbend = stub.bend();
 
+    int ibend=sbend*2+15;
+    if (ibend<0) ibend=0;
+    if (ibend>31) ibend=31;
+
+    bend_.set(ibend,5,true,__LINE__,__FILE__);
+    
     isPSmodule_ = false;
     if (stub.isPSmodule()) isPSmodule_=true;
     
@@ -106,6 +112,8 @@ public:
 
       isbarrel_=true;
 
+      disk_.set(0,4,false,__LINE__,__FILE__);
+	  
       double rmin=-1.0;
       double rmax=-1.0;
 
@@ -188,25 +196,32 @@ public:
       phi_.set(iphi,iphibits,true,__LINE__,__FILE__);
 
       /*
-	if (layer<4) {
-	
-	cout << "iphi phitmp iphi*two_pi/(21*(1<<14)):"<<
-	iphi<<" "<<phi_.value()<<" "<<phitmp_
-	<<" "<< (phi_.value())*two_pi/(21*(1<<14))<<endl;
-	
-	//assert(fabs(phitmp_-(phi_.value()-(1<<11))*two_pi/(21*(1<<14)))<0.1);
-	
-	}
+      double Delta=stub.r()-rmean[layer-1];
+      double dphi=Delta*stub.bend()*0.009/0.18/rmean[layer-1];
+
+      int idphi=0;
+  
+      if (layer<=3) {
+        idphi=dphi/kphi;
+      } else {
+        idphi=dphi/kphi1;
+      }
+
+     
+      //cout << "iphi idphi "<<phi_.value()<<" "<<idphi<<endl;
+    
+      int iphicorr=iphi+idphi;
+
+      if (iphicorr<0) iphicorr=0;
+      if (iphicorr>=(1<<phi_.nbits())) iphicorr=(1<<phi_.nbits())-1;
+
+        
       */
 
-      //zraw_.set(iz,izbits,false);
-      //phiraw_.set(iphi,iphibits);
-    
-      int izvm=(iz>>(izbits-(Nzbits+VMzbits)))&((1<<VMzbits)-1);
-      //cout << "izvm "<<izvm<<endl;
-      int irvm=ir>>(irbits-VMrbits);
+      phicorr_.set(iphi,iphibits,true,__LINE__,__FILE__);
+
+      
       int iphivm=0;
-      //cout << "iphi third : "<<iphi<<endl;
       
       iphivm=(iphi>>(iphibits-(Nphibits+VMphibits)))&((1<<VMphibits)-1);
       
@@ -214,20 +229,8 @@ public:
 	iphivm^=(1<<(VMphibits-1));
       }
 
-      //cout << "iphivm :"<<iphivm<<endl;
-      
-      zvm_.set(izvm,VMzbits,true,__LINE__,__FILE__);
       phivm_.set(iphivm,VMphibits,true,__LINE__,__FILE__);
-      rvm_.set(irvm,VMrbits,false,__LINE__,__FILE__);
 
-      //cout << "ASTUB "<<r<<" "<<ir<<" "<<irvm<<endl;
-
-      //if (layer==1) {
-      //  cout << stubphi_ << " " << stubpt_.str() <<"|"<< r_.str()<<"|" 
-      //   << z_.str()<<"|"<< phi_.str()<<"   "
-      //	   << stubpt_.str() <<"|xxxxxx|" 
-      //	   << rvm_.str() <<"|"<< zvm_.str()<<"|"<<phivm_.str()<<endl;
-      //}
     } else {
       
       // Here we handle the hits on disks.
@@ -360,8 +363,8 @@ public:
       phi_.set(iphi,iphibits,true,__LINE__,__FILE__);
       stubpt_.set(ipt,3,true,__LINE__,__FILE__);
 
-      int irvm=ir>>(nrbitsdisk-(Nrbitsdisk+nrbitsdiskvm))&((1<<nrbitsdiskvm)-1);
-      int izvm=iz>>(nzbitsdisk-nzbitsdiskvm);
+      phicorr_.set(iphi,iphibits,true,__LINE__,__FILE__);    //FIXME For now not corrected  
+      
       int iphivm=0;
 
       iphivm=(iphi>>(iphibits-(Nphibits+VMphibits)))&((1<<VMphibits)-1);
@@ -378,17 +381,27 @@ public:
       //cout << "iphivm :"<<iphivm<<endl;
 
       disk_.set(disk,4,false,__LINE__,__FILE__);    
-      zvm_.set(izvm,nzbitsdiskvm,false,__LINE__,__FILE__);
       phivm_.set(iphivm,3,true,__LINE__,__FILE__);
-      //phivm_.set(iphivm,VMphibits); should really be this!!!
-      rvm_.set(irvm,nrbitsdiskvm,true,__LINE__,__FILE__);
 
       double alpha=stub.alpha();
       assert(fabs(alpha)<alphamax);
       int ialpha=round_int(alpha/kalpha);
+
+      //if (stub.r()>100) cout << "r alpha ialpha : "<<stub.r()<<" "<<alpha<<" "<<ialpha<<endl;
       
       alpha_.set(ialpha,nbitsalpha,false,__LINE__,__FILE__);
 
+      double alphanew=stub.alphanew();
+      assert(fabs(alphanew)<1.0);
+      int ialphanew=alphanew*(1<<(nbitsalpha-1));
+      assert(ialphanew<(1<<(nbitsalpha-1)));
+      assert(ialphanew>=-(1<<(nbitsalpha-1)));
+      alphanew_.set(ialphanew,nbitsalpha,false,__LINE__,__FILE__);
+
+      //cout << "alphanew ialphanew "<<alphanew<<" "<<ialphanew<<" "<<alphanew_.value()<<endl;
+	    
+
+      
     }
 
   }
@@ -402,13 +415,20 @@ public:
   //Returns a number from 0 to 31
   int iphivmRaw() const {
 
-    //cout << layer_.value()<<" "<<disk_.value()<<endl;
-    
-    int iphivm=(phi_.value()>>(phi_.nbits()-5));
+    int iphivm=(phicorr_.value()>>(phicorr_.nbits()-5));
     assert(iphivm>=0);
     assert(iphivm<32);
     return iphivm;
     
+  }
+
+  //VMbits is the number of bits for the fine bins. E.g. 32 bins would use VMbits=5
+  //finebits is the number of bits within the VM 
+  
+  int iphivmFineBins(int VMbits, int finebits) const {
+
+    return (phicorr_.value()>>(phicorr_.nbits()-VMbits-finebits))&((1<<finebits)-1);
+
   }
 
 
@@ -566,26 +586,17 @@ public:
   std::string vmstr() const {
     
     std::ostringstream oss;
-    oss << stubpt_.str() <<"|"<<stubindex_.str()<<"|" 
-	<< zvm_.str() <<"|"<< phivm_.str()<<"|"<<rvm_.str();
+    oss << stubpt_.str() <<"|"<<stubindex_.str()<<"|"<< phivm_.str();
 
     return oss.str();
 
   }
 
-  std::string fedregionaddressstr() {
-
-    std::ostringstream oss;
-    oss <<  (bitset<3>)(fedregion()-1)<< stubindex_.str();
-
-    return oss.str();
-
-  }
 
   std::string phiregionaddressstr() {
 
     std::ostringstream oss;
-	assert(phiregion()>0);
+	assert(phiregion()>-1);
 	oss << (bitset<3>(phiregion()-1)) << stubindex_.str();
 
 	return oss.str();
@@ -600,62 +611,34 @@ public:
     return 3;
 
   }
-
-  int fedregion() const {
-
-    if (isBarrel()) {
-      if (z_.value()+(1<<(z_.nbits()-1))<0.25*(1<<z_.nbits())) return 1;
-      if (z_.value()+(1<<(z_.nbits()-1))<0.50*(1<<z_.nbits())) return 2;
-      if (z_.value()+(1<<(z_.nbits()-1))<0.75*(1<<z_.nbits())) return 3;
-      return 4;
-    }
-
-    //cout << "fedregion z :"<<z_.value()<<" "<<disk_.value()<<endl;
-    if (disk_.value()>0) {
-      if (isPSmodule())return 5;
-      return 6;
-    } else {
-      if (isPSmodule()) return 7;
-      return 8;
-    }
-
-  }
-
+  
+  
   int phiregion() const {
-	  
-	if (layer_.value()==0 or layer_.value()==2 or layer_.value()==4) { // L1, L3, L5
-	  if (iphivmRaw()>=4 and iphivmRaw()<=11) return 1;
+
+    if (layer_.value()==0 or layer_.value()==2 or layer_.value()==4) { // L1, L3, L5
+      if (iphivmRaw()>=4 and iphivmRaw()<=11) return 1;
 	  else if (iphivmRaw()>=12 and iphivmRaw()<=19) return 2;
 	  else if (iphivmRaw()>=20 and iphivmRaw()<=27) return 3;
-	  else return -1;
-	}
-	else if (layer_.value()==1 or layer_.value()==3 or layer_.value()==5) { // L2, L4, L6
-	  if (iphivmRaw()>=0 and iphivmRaw()<=7) return 1;
+	  else return 0;
+    }
+    else if (layer_.value()==1 or layer_.value()==3 or layer_.value()==5) { // L2, L4, L6
+      if (iphivmRaw()>=4 and iphivmRaw()<=7) return 1;
 	  else if (iphivmRaw()>=8 and iphivmRaw()<=15) return 2;
 	  else if (iphivmRaw()>=16 and iphivmRaw()<=23) return 3;
-	  else if (iphivmRaw()>=24 and iphivmRaw()<=31) return 4;
-	  else return -1;
-	}
-	// FIXME
-	else if (abs(disk_.value())==1 or abs(disk_.value())==3 or abs(disk_.value())==5) { // D1, D3, D5
-	  if (iphivmRaw()>=4 and iphivmRaw()<=11) return 1;
+	  else if (iphivmRaw()>=24 and iphivmRaw()<=27) return 4;
+	  else return 0;
+    }
+    else if (abs(disk_.value())>=1 and abs(disk_.value())<=5) { // Disk
+      if (iphivmRaw()>=4 and iphivmRaw()<=11) return 1;
 	  else if (iphivmRaw()>=12 and iphivmRaw()<=19) return 2;
 	  else if (iphivmRaw()>=20 and iphivmRaw()<=27) return 3;
-	  else return -1;
-	}
-	// FIXME
-	else if (abs(disk_.value())==2 or abs(disk_.value())==4) { // D2, D4
-	  if (iphivmRaw()>=0 and iphivmRaw()<=7) return 1;
-	  else if (iphivmRaw()>=8 and iphivmRaw()<=15) return 2;
-	  else if (iphivmRaw()>=16 and iphivmRaw()<=23) return 3;
-	  else if (iphivmRaw()>=24 and iphivmRaw()<=31) return 4;
-	  else return -1;
-	}
-	else
-	  return -1;
-	
+	  else return 0;
+    }
+    else
+      return -1;
   }
-	
+
+ 
   void setAllStubIndex(int nstub){
     if (nstub>=(1<<6)){
       if (debug1) cout << "Warning too large stubindex!"<<endl;
@@ -664,17 +647,82 @@ public:
 
     stubindex_.set(nstub,6);
   }
+
+  void setAllStubAddressTE(int nstub){
+    if (nstub>=(1<<6)){
+      if (debug1) cout << "Warning too large stubindex!"<<endl;
+      nstub=(1<<6)-1;
+    }
+
+    stubaddressaste_.set(nstub,6);
+  }
+
+
+  void setPhiCorr(int phiCorr){
+
+    /*    
+    int layer=layer_.value()+1;
+    
+    double Delta=stubr_-rmean[layer-1];
+    double dphi=Delta*0.5*(bend_.value()-15.0)*0.009/0.18/rmean[layer-1];
+
+    int idphi=0;
+
+    if (layer<=3) {
+      idphi=dphi/kphi;
+    } else {
+        idphi=dphi/kphi1;
+    }
+    */
+     
+    //cout << "iphi idphi "<<phi_.value()<<" "<<idphi<<endl;
+    
+    //int iphicorr=phi_.value()+idphi;
+    int iphicorr=phi_.value()+phiCorr;
+
+    //cout << "phiCorr: layer bend old, new : "<<layer<<" "<<bend_.value()<<" "<<idphi<<" "<<phiCorr<<endl;
+    
+    if (iphicorr<0) iphicorr=0;
+    if (iphicorr>=(1<<phi_.nbits())) iphicorr=(1<<phi_.nbits())-1;
+
+    phicorr_.set(iphicorr,phi_.nbits(),true,__LINE__,__FILE__);
+
+  }
+  
+  void setVMBits(int bits){
+    int nbits=-1;
+    assert(vmbits_.value()==-1); //Should never change the value; -1 means uninitialized
+    if (layer_.value()==0 or layer_.value()==2 or layer_.value()==4) { // L1, L3, L5
+      nbits=2*NLONGVMBITS+1+3;
+    }
+    if (layer_.value()==1 or layer_.value()==3 or layer_.value()==5) { // L2, L4, L6
+      nbits=2*NLONGVMBITS+1+3;
+    }
+    int disk=abs(disk_.value());
+    if (disk==1 or disk==3) { // D1, D3
+      nbits=2*NLONGVMBITS+3;
+    }
+    if (disk==2 or disk==4) { // D2, D4
+      nbits=2*NLONGVMBITS;
+    }
+    //cout << "layer, disk : "<<layer_.value()<<" "<<disk_.value()<<endl;
+    assert(nbits>=0);
+    vmbits_.set(bits,nbits,true,__LINE__,__FILE__);
+  }
+
+  FPGAWord getVMBits() const { return vmbits_; }
   
   FPGAWord stubpt() const { return stubpt_; }
 
-  FPGAWord rvm() const { return rvm_; }
-  FPGAWord zvm() const { return zvm_; }
-  FPGAWord phivm() const { return phivm_; }
+  FPGAWord phivm() const {return phivm_; }
+
+  FPGAWord bend() const {return bend_; }
 
   FPGAWord r() const { return r_; }
   FPGAWord z() const { return z_; }
   FPGAWord phi() const { return phi_; }
   FPGAWord alpha() const { return alpha_; }
+  FPGAWord alphanew() const { return alphanew_; }
 
 
   int ir() const { return r_.value(); }
@@ -685,6 +733,7 @@ public:
   double phimin() const {return phimin_;}
 
   FPGAWord stubindex() const {return stubindex_;}
+  FPGAWord stubaddressaste() const {return stubaddressaste_;} 
 
   FPGAWord layer() const {return layer_;}
 
@@ -704,6 +753,42 @@ public:
     return (r > 0.0) ? (r + 0.5) : (r - 0.5); 
   }
 
+  double rapprox(){
+    if (disk_.value()==0){
+      int lr=2;
+      if (layer_.value()>=3) {
+	lr=1;
+      }
+      return r_.value()*kr*lr+rmean[layer_.value()];
+    }
+    return r_.value()*krdisk+rmindisk;
+  }
+
+  double zapprox() {
+    if (disk_.value()==0){
+      int lz=1;
+      if (layer_.value()>=3) {
+	lz=16;
+      }
+      return z_.value()*kz*lz;
+    }
+    int sign=1;
+    if (disk_.value()<0) sign=-1;
+    return z_.value()*kz+sign*zmean[abs(disk_.value())-1];
+  }
+
+  double phiapprox(double phimin, double phimax){
+    int lphi=1;
+    if (layer_.value()>=3) {
+      lphi=8;
+    }
+    double phi=phimin-(phimax-phimin)/6.0+phi_.value()*kphi/lphi;
+    if (phi>0.5*two_pi) phi-=two_pi;
+    if (phi<-0.5*two_pi) phi+=two_pi;
+    return phi;
+  }
+
+  
 private:
 
   bool isbarrel_;
@@ -715,11 +800,18 @@ private:
   FPGAWord z_;
   FPGAWord phi_;
   FPGAWord alpha_;
+  FPGAWord alphanew_;
 
-  FPGAWord zvm_;
+  FPGAWord bend_;
+  
+  FPGAWord phicorr_;  //Corrected for bend to nominal radius
+  
   FPGAWord phivm_;
-  FPGAWord rvm_;
   FPGAWord stubindex_;
+  FPGAWord stubaddressaste_;
+
+  FPGAWord vmbits_;
+  
   double stubphi_;
   double stubr_;
   double stubz_;

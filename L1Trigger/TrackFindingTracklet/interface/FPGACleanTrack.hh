@@ -122,6 +122,31 @@ public:
     }
     out_.close();
 
+    // --------------------------------------------------------------
+    // print separately ALL cleaned tracks in single file
+    if (writeAllCT) { 
+
+      std::string fnameAll="CleanTracksAll.dat";
+      if (first && iSector_==0) 
+	out_.open(fnameAll.c_str());
+      else 
+	out_.open(fnameAll.c_str(),std::ofstream::app);
+      
+      if (tracks_.size()>0) 
+	out_ << "BX= "<<(bitset<3>)bx_ << " event= " << event_  << " seed= " << getName() << " phisector= " << iSector_+1 << endl;
+
+      for (unsigned int j=0;j<tracks_.size();j++){
+	if (j<16) out_<<"0";
+	out_<<hex<<j<<dec<<" ";
+	out_<<tracks_[j]->trackfitstr();
+	out_<<"\n";
+      }
+      out_.close();
+
+    }
+    // --------------------------------------------------------------
+
+
     bx_++;
     event_++;
     if (bx_>7) bx_=0;
