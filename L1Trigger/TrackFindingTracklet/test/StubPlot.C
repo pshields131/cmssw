@@ -162,6 +162,10 @@ void StubPlot(TString type) {
     for (int it=0; it<(int)allstub_trigBend->size(); it++) {
       int pdgid = allstub_matchTP_pdgid->at(it);
       float charge = (allstub_matchTP_pdgid->at(it))/(fabs(allstub_matchTP_pdgid->at(it)));
+      if (fabs(allstub_matchTP_pdgid->at(it)) < 21) {
+	charge = -charge;
+      }
+      // Might want to look more closely at this...
       float pt = charge*allstub_matchTP_pt->at(it); // Giving a sign to pt
       float x_pos = allstub_x->at(it);
       float y_pos = allstub_y->at(it);
@@ -179,10 +183,18 @@ void StubPlot(TString type) {
       float det_sensorSpacing = allstub_det_sensorSpacing->at(it);
       float det_pitch = allstub_det_pitch->at(it);
       float det_theta0 = allstub_det_theta0->at(it);
+
+      //cout << pt <<" "<< pt_st << endl;
       
       if (pt==999) {
 	continue;
       }
+
+      if (fabs(pt)<2) {
+	continue;
+      }
+
+      //cout << pt <<" "<< pt_st <<" "<< bcharge << endl;
 
       float diff = 1.0/pt - 1.0/pt_st;
       float diffi = pt - pt_st;
