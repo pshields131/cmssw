@@ -248,9 +248,15 @@ if (writeHitEff) {
     }
     VMRouterTimer.stop();
 
+    bool ptflag = true; // set false for pt cut in emulation
+
+    if (ev.simtrack(0).pt() > 3 or fabs(ev.simtrack(0).eta()) > 1.0 or fabs(ev.simtrack(0).eta()) < 0.5) {
+      ptflag = true;
+    }
+
     TETimer.start();
     for (unsigned int k=0;k<NSector;k++) {
-      sectors[k]->executeTE();	
+      sectors[k]->executeTE(ptflag);	
       if(writemem&&k==writememsect){
         sectors[k]->writeSP(first);
       } 

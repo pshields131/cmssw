@@ -382,9 +382,9 @@ public:
     }
   }
 
-  void executeTE(){
+  void executeTE(bool ptflag){
     for (unsigned int i=0;i<TE_.size();i++){
-      TE_[i]->execute();
+      TE_[i]->execute(ptflag);
     }
   }
 

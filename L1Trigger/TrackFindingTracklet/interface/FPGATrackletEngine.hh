@@ -109,8 +109,11 @@ public:
     assert(0);
   }
 
-  void execute() {
+  void execute(bool ptflag) {
 
+    if (ptflag) {
+      return;
+    }
     
     if (!((doL1L2&&(layer1_==1)&&(layer2_==2))||
 	  (doL3L4&&(layer1_==3)&&(layer2_==4))||
@@ -149,12 +152,15 @@ public:
     assert(innervmstubs_!=0);
     assert(outervmstubs_!=0);
     for(unsigned int i=0;i<innervmstubs_->nStubs();i++){
+      
       std::pair<FPGAStub*,L1TStub*> innerstub=innervmstubs_->getStub(i);
       if (debug1) {
 	cout << "In "<<getName()<<" have inner stub"<<endl;
       }
 
       static ofstream outd("trackletenginediff.txt");
+      static ofstream outb("trackletenginebend.txt");
+      static ofstream outb2("trackletenginebend2.txt");
 
       if ((layer1_==1 && layer2_==2)||
 	  (layer1_==3 && layer2_==4)||
@@ -171,7 +177,7 @@ public:
 	  for(unsigned int j=0;j<outervmstubs_->nStubsBinned(ibin);j++){
 	    std::pair<FPGAStub*,L1TStub*> outerstub=outervmstubs_->getStubBinned(ibin,j);
 	    countall++;
-	    if (0) {
+	    if (1) {
 	      TiltedGeometryInfo *tgi = TiltedGeometryInfo::getInstance();
 	      unsigned int detId1 = innerstub.second->stackDetId();
 	      double r1 = tgi->r(detId1)/1000;
@@ -204,6 +210,16 @@ public:
 	      
 	      outd << "LL " << innerstub.second->allStubIndex() <<" "<< layer1_ <<" "<< innerstub.second->bend() <<" "<< pt1 <<" "<< outerstub.second->simtrackid() <<" "<< layer2_ <<" "<< outerstub.second->bend() <<" "<< pt2 <<" "<< 1.0/pt1 - 1.0/pt2 << endl;
 	      
+	      double rinv=2*sin(outerstub.second->phi()-innerstub.second->phi())/
+		(innerstub.second->r()-outerstub.second->r());
+
+	      double cbend1 = (sin(theta1)*sensorSpacing1*sqrt(invpitch1))/(cos(theta1-tiltAngle1)*sqrt(pow(0.01998613/(r1*rinv),2)-1));
+	      double cbend2 = (sin(theta2)*sensorSpacing2*sqrt(invpitch2))/(cos(theta2-tiltAngle2)*sqrt(pow(0.01998613/(r2*rinv),2)-1));
+
+	      outb << "LL " << rinv <<" "<< layer1_ <<" "<< innerstub.second->bend() <<" "<< cbend1 << " "<< layer2_ << " "<< outerstub.second->bend() <<" "<< cbend2 << endl;
+	      outb2 << "LL " << rinv <<" "<< layer1_ <<" "<< innerstub.second->bend() <<" "<< theta1 <<" "<< sensorSpacing1 <<" "<< invpitch1 <<" "<< tiltAngle1 <<" "<< r1 <<" "<< layer2_ <<" "<< outerstub.second->bend() <<" "<< theta2 <<" "<< sensorSpacing2 <<" "<< invpitch2 <<" "<< tiltAngle2 <<" "<< r2 << endl;
+	      //cout << "LL " << rinv <<" "<< layer1_ <<" "<< innerstub.second->bend() <<" "<< cbend1 << " "<< layer2_ << " "<< outerstub.second->bend() <<" "<< cbend2 << endl;
+
 	      double pass = 1.0;
 	      if (layer1_==1 && layer2_==2) {
 		pass = 0.6;
@@ -241,7 +257,7 @@ public:
 	  for(unsigned int j=0;j<outervmstubs_->nStubsBinned(ibin);j++){
 	    std::pair<FPGAStub*,L1TStub*> outerstub=outervmstubs_->getStubBinned(ibin,j);
 	    countall++;
-	    if (0) {
+	    if (1) {
 	      TiltedGeometryInfo *tgi = TiltedGeometryInfo::getInstance();
 	      unsigned int detId1 = innerstub.second->stackDetId();
 	      double r1 = tgi->r(detId1)/1000;
@@ -274,6 +290,11 @@ public:
 	      }
 	      
 	      outd << "DD " << innerstub.second->simtrackid() <<" "<< disk1_ <<" "<< innerstub.second->bend() <<" "<< pt1 <<" "<< outerstub.second->simtrackid() <<" "<< disk2_ <<" "<< outerstub.second->bend() <<" "<< pt2 <<" "<< 1.0/pt1-1.0/pt2 << endl;
+
+	      double rinv=2*sin(outerstub.second->phi()-innerstub.second->phi())/
+                (innerstub.second->r()-outerstub.second->r());
+	      
+	      outb2 << "DD " << rinv <<" "<< disk1_ <<" "<< innerstub.second->bend() <<" "<< theta1 <<" "<< sensorSpacing1 <<" "<< invpitch1 <<" "<< tiltAngle1 <<" "<< r1 <<" "<< disk2_ <<" "<< outerstub.second->bend() <<" "<< theta2 <<" "<< sensorSpacing2 <<" "<< invpitch2 <<" "<< tiltAngle2 <<" "<< r2 << endl;
 	      
 	      double pass = 1.0;
 	      if (disk1_==1 && disk2_==2) {
